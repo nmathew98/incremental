@@ -1,17 +1,17 @@
-export const monitor = ({
+export const makeMonitored = ({
 	fetchFn,
 	onFetching,
 	onSuccess,
 	onError,
-	refetchOnWindowFocus,
-	enabled,
+	refetchOnWindowFocus = false,
+	enabled = true,
 }) => {
-	const wrappedFetchFn = async args => {
+	const wrappedFetchFn = async (...args) => {
 		if (!enabled) return;
 
 		onFetching(true);
 
-		return await fetchFn(args)
+		return fetchFn(...args)
 			.then(onSuccess)
 			.catch(onError)
 			.finally(() => onFetching(false));
@@ -20,5 +20,5 @@ export const monitor = ({
 	if (refetchOnWindowFocus)
 		window?.addEventListener("focusin", wrappedFetchFn);
 
-	return fetchFn;
+	return wrappedFetchFn;
 };
