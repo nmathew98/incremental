@@ -13,7 +13,11 @@ export const makeMonitored = ({
 
 		return fetchFn(...args)
 			.then(onSuccess)
-			.catch(onError)
+			.catch(error => {
+				onError?.(error);
+
+				throw error;
+			})
 			.finally(() => onFetching(false));
 	};
 
