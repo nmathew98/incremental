@@ -1,7 +1,7 @@
 import { describe, expect, it, vitest } from "vitest";
 import { createCRDT } from ".";
 
-describe("crdt", () => {
+describe("createCRDT", () => {
 	describe("`dispatch`", () => {
 		it("invokes `onChange` when updates are dispatched", () => {
 			const INITIAL_VALUE = { b: 1 };
