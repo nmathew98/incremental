@@ -71,7 +71,7 @@ describe("makeMonitored", () => {
 
 		await expect(
 			monitoredFetch("hello", "world"),
-		).resolves.not.toThrowError();
+		).rejects.toThrowError();
 
 		expect(onFetching).toHaveBeenNthCalledWith(1, true);
 		expect(onFetching).toHaveBeenNthCalledWith(2, false);
