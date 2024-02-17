@@ -7,24 +7,24 @@ export const createCRDT = ({
 	const updatedDates: Date[] = [];
 	const data = new Map();
 
-	const createNewVersion = () => {
+	const createNewVersion = (timestamp?: Date) => {
 		versions.push(Object.fromEntries(data));
-		updatedDates.push(new Date());
+		updatedDates.push(timestamp ?? new Date());
 	};
 	const merge = (record, map = new Map()) =>
 		Object.entries(record).forEach(([key, value]) => map.set(key, value));
 
 	const dispatch = updates => {
-		const apply = diff => {
+		const apply = ({ timestamp, ...diff }) => {
 			// Last write wins
 			if (
-				diff.timestamp instanceof Date &&
-				diff.timestamp < (updatedDates.at(-1) as Date)
+				timestamp instanceof Date &&
+				timestamp < (updatedDates.at(-1) as Date)
 			)
 				return versions.at(-1);
 
 			merge(diff, data);
-			createNewVersion();
+			createNewVersion(timestamp);
 
 			const latest = versions.at(-1);
 
@@ -33,8 +33,8 @@ export const createCRDT = ({
 				updatedDates.splice(0, updatedDates.length - 1);
 			}
 
-			onChange(latest);
-			return latest;
+			const onChangeResult = onChange(latest);
+			return onChangeResult ?? latest;
 		};
 
 		if (typeof updates === "function")
