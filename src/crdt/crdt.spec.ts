@@ -5,10 +5,10 @@ describe("createCRDT", () => {
 	describe("`dispatch`", () => {
 		it("invokes `onChange` when updates are dispatched", () => {
 			const INITIAL_VALUE = { b: 1 };
-			const onChange = vitest.fn();
+			const onChange: () => null = vitest.fn();
 
 			const { dispatch } = createCRDT({
-				initialValue: INITIAL_VALUE,
+				initialValue: INITIAL_VALUE as Record<string, any>,
 				onChange,
 			});
 
@@ -111,7 +111,7 @@ describe("createCRDT", () => {
 			});
 
 			const FIRST_UPDATE = {
-				timestamp: new Date(0),
+				timestamp: new Date(0).getTime(),
 				a: 1,
 			};
 

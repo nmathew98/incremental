@@ -27,17 +27,19 @@ On the frontend, we often have to fetch data from the backend and then apply upd
 
 ```typescript
 const user = createCRDT({
-	initialValue: await makeMemo(service.getUserById)(userId),
-	onChange: makeMonitor({
-		fetchFn: service.putUser,
-		onFetching: toggleLoadingIndicator,
-		// For `fetchFn` to throw `onError`
-		// `onError` has to throw
-		onError: displayError,
-	}),
+	initialValue: await service.getUserById,
+	onChange: over(
+		makeMonitor({
+			fetchFn: service.putUser,
+			onFetching: toggleLoadingIndicator,
+			// For `fetchFn` to throw `onError`
+			// `onError` has to throw
+			onError: displayError,
+		}),
+	),
 });
 
-const onSubmit = user.dispatch;
+const onSubmit = updates => user.dispatch(updates, { onChange: setUser });
 ```
 
 or, sometimes we have incremental updates from multiple sources which need to be applied:
