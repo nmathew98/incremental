@@ -1,4 +1,4 @@
-![Tests](https://github.com/nmathew98/txn/actions/incremental/main.yml/badge.svg)
+![Tests](https://github.com/nmathew98/incremental/actions/workflows/main.yml/badge.svg)
 
 ## About
 
