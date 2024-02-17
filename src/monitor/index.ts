@@ -1,4 +1,4 @@
-export const makeMonitored = ({
+export const makeMonitoredFetch = ({
 	fetchFn,
 	onFetching,
 	onSuccess,
@@ -6,15 +6,15 @@ export const makeMonitored = ({
 	refetchOnWindowFocus = false,
 	enabled = true,
 }) => {
-	const wrappedFetchFn = async (...args) => {
+	const monitoredFetchFn = async (...args) => {
 		if (!enabled) return;
 
 		onFetching(true);
 
 		return fetchFn(...args)
-			.then(onSuccess)
+			.then(result => onSuccess?.(result, ...args))
 			.catch(error => {
-				onError?.(error);
+				onError?.(error, ...args);
 
 				throw error;
 			})
@@ -22,7 +22,7 @@ export const makeMonitored = ({
 	};
 
 	if (refetchOnWindowFocus)
-		window?.addEventListener("focusin", wrappedFetchFn);
+		window?.addEventListener("focusin", monitoredFetchFn);
 
-	return wrappedFetchFn;
+	return monitoredFetchFn;
 };
