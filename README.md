@@ -61,7 +61,12 @@ newMessagesSocket.onmessage = event =>
 
 		return {
 			timestamp: new Date(event.data.timestamp),
-			value: [...previousChatMessages.value, ...event.data.value],
+			// when it comes to subscriptions and arrays, supply the latest value in full
+			// and dedupe
+			value: uniqBy(
+				[...previousChatMessages.value, ...event.data.value],
+				"uuid",
+			),
 		};
 	});
 
