@@ -6,6 +6,7 @@ describe("createCRDT", () => {
 		it("invokes `onChange` when updates are dispatched", () => {
 			const INITIAL_VALUE = { b: 1 };
 			const onChange = vitest.fn();
+
 			const { dispatch } = createCRDT({
 				initialValue: INITIAL_VALUE,
 				onChange,
@@ -14,15 +15,20 @@ describe("createCRDT", () => {
 			const FIRST_UPDATE = { a: 1 };
 			dispatch(FIRST_UPDATE);
 
-			expect(onChange).toBeCalledWith({
-				...INITIAL_VALUE,
-				...FIRST_UPDATE,
-			});
+			expect(onChange).toBeCalledWith(
+				{
+					...INITIAL_VALUE,
+					...FIRST_UPDATE,
+				},
+				INITIAL_VALUE,
+			);
 			expect(onChange).toBeCalledTimes(1);
 		});
 
 		it("allows an updates to be computed", () => {
+			const INITIAL_VALUE = Object.create(null);
 			const setState = vitest.fn();
+
 			const crdt = createCRDT({
 				initialValue: Object.create(null),
 				onChange: setState,
@@ -33,21 +39,25 @@ describe("createCRDT", () => {
 
 			crdt.dispatch(previous => ({ ...previous, ...FIRST_UPDATE }));
 
-			expect(setState).toBeCalledWith(FIRST_UPDATE);
+			expect(setState).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
 			expect(setState).toBeCalledTimes(1);
 
 			crdt.dispatch(previous => ({ ...previous, ...SECOND_UPDATE }));
 
-			expect(setState).toBeCalledWith({
-				...FIRST_UPDATE,
-				...SECOND_UPDATE,
-			});
+			expect(setState).toBeCalledWith(
+				{
+					...FIRST_UPDATE,
+					...SECOND_UPDATE,
+				},
+				FIRST_UPDATE,
+			);
 			expect(setState).toBeCalledTimes(2);
 
 			expect(crdt.data).toEqual({ ...FIRST_UPDATE, ...SECOND_UPDATE });
 		});
 
 		it("allows updates to be specified", () => {
+			const INITIAL_VALUE = Object.create(null);
 			const upsert = vitest.fn().mockImplementation(updates => {
 				const query = `INSERT INTO users(${Object.keys(updates).join(", ")})
 					VALUES (${Object.values(updates).join(", ")})
@@ -60,6 +70,7 @@ describe("createCRDT", () => {
 
 				return query;
 			});
+
 			const { dispatch } = createCRDT({
 				initialValue: Object.create(null),
 				onChange: upsert,
@@ -68,12 +79,13 @@ describe("createCRDT", () => {
 			const FIRST_UPDATE = { a: 1 };
 			dispatch(FIRST_UPDATE);
 
-			expect(upsert).toBeCalledWith(FIRST_UPDATE);
+			expect(upsert).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
 			expect(upsert).toBeCalledTimes(1);
 		});
 
 		it("returns a new reference", () => {
 			const onChange = vitest.fn();
+
 			const crdt = createCRDT({
 				initialValue: Object.create(null),
 				onChange,
@@ -92,6 +104,7 @@ describe("createCRDT", () => {
 
 		it("only applies the latest updates", () => {
 			const onChange = vitest.fn();
+
 			const crdt = createCRDT({
 				initialValue: Object.create(null),
 				onChange,
