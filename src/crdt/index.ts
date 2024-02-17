@@ -1,10 +1,13 @@
 import type { CRDT, CreateCRDTParameters } from "./types";
 
-export const createCRDT = <T extends Record<string, any>>({
+export const createCRDT = <
+	D extends Record<string, any>,
+	C extends (next: D, previous: D) => any,
+>({
 	initialValue,
 	onChange,
-	trackVersions = true,
-}: CreateCRDTParameters<T>): CRDT<T> => {
+	trackVersions = false,
+}: CreateCRDTParameters<D, C>): CRDT<D, C> => {
 	const versions: any[] = [];
 	const updatedDates: Date[] = [];
 	const data = new Map();

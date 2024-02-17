@@ -1,14 +1,14 @@
 import type { MakeMonitoredParameters } from "./types";
 
-export const makeMonitoredFetch = ({
+export const makeMonitoredFetch = <F extends (...args: any[]) => Promise<any>>({
 	fetchFn,
 	onFetching,
 	onSuccess,
 	onError,
 	refetchOnWindowFocus = false,
 	enabled = true,
-}: MakeMonitoredParameters) => {
-	const monitoredFetchFn = async (...args) => {
+}: MakeMonitoredParameters<F>) => {
+	const monitoredFetchFn = async (...args: Parameters<typeof fetchFn>) => {
 		if (!enabled) return;
 
 		onFetching?.(true);
@@ -28,7 +28,7 @@ export const makeMonitoredFetch = ({
 	};
 
 	if (refetchOnWindowFocus)
-		window?.addEventListener("focusin", monitoredFetchFn);
+		window?.addEventListener("focusin", monitoredFetchFn as any);
 
 	return monitoredFetchFn as typeof fetchFn;
 };
