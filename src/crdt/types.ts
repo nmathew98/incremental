@@ -18,10 +18,7 @@ export interface CreateCRDTParameters<T extends Record<string, any>> {
 export interface CRDT<T extends Record<string, any>> {
 	readonly data: T;
 	dispatch: <R = T>(
-		/**
-		 * `timestamp` should be the number of seconds since UNIX epoch
-		 */
-		updates: Partial<T> & { timestamp?: number },
+		updates: Partial<T> & { timestamp?: Date },
 		options?: DispatchOptions<T>,
 	) => R;
 	versions: T[];
