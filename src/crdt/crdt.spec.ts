@@ -111,7 +111,7 @@ describe("createCRDT", () => {
 			});
 
 			const FIRST_UPDATE = {
-				timestamp: new Date(0).getTime(),
+				timestamp: new Date(0),
 				a: 1,
 			};
 
