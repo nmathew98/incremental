@@ -6,7 +6,7 @@
 		"require": "./dist/index.js",
 		"types": "./dist/index.d.ts"
 	},
-	"description": "Simple composable async state management utilities",
+	"description": "Simple universal composable async state management utilities",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
@@ -19,7 +19,8 @@
 		"management",
 		"utilities",
 		"composable",
-		"database"
+		"database",
+		"universal"
 	],
 	"scripts": {
 		"build": "tsup-node src/index.ts --dts --format esm,cjs",
