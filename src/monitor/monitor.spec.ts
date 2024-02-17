@@ -1,23 +1,23 @@
 import { describe, expect, it, vitest } from "vitest";
-import { makeMonitored } from ".";
+import { makeMonitoredFetch } from ".";
 
 describe("makeMonitored", () => {
 	it("invokes `onFetching` when `fetchFn` is fetching", async () => {
-		const fetchFn = vitest.fn().mockImplementation(() => Promise.resolve());
+		const fetchFn = vitest
+			.fn()
+			.mockImplementation(() => Promise.resolve("result!"));
 		const onFetching = vitest.fn();
 		const onSuccess = vitest.fn();
 		const onError = vitest.fn();
 
-		const monitoredFetch = makeMonitored({
+		const fetch = makeMonitoredFetch({
 			fetchFn,
 			onFetching,
 			onSuccess,
 			onError,
 		});
 
-		await expect(
-			monitoredFetch("hello", "world"),
-		).resolves.not.toThrowError();
+		await expect(fetch("hello", "world")).resolves.not.toThrowError();
 
 		expect(fetchFn).toBeCalledTimes(1);
 		expect(fetchFn).toHaveBeenCalledWith("hello", "world");
@@ -26,6 +26,8 @@ describe("makeMonitored", () => {
 		expect(onFetching).toHaveBeenNthCalledWith(2, false);
 
 		expect(onSuccess).toHaveBeenCalled();
+		expect(onSuccess).toHaveBeenCalledWith("result!", "hello", "world");
+
 		expect(onError).not.toHaveBeenCalled();
 	});
 
@@ -35,7 +37,7 @@ describe("makeMonitored", () => {
 		const onSuccess = vitest.fn();
 		const onError = vitest.fn();
 
-		const monitoredFetch = makeMonitored({
+		const fetch = makeMonitoredFetch({
 			fetchFn,
 			onFetching,
 			onSuccess,
@@ -43,9 +45,7 @@ describe("makeMonitored", () => {
 			enabled: false,
 		});
 
-		await expect(
-			monitoredFetch("hello", "world"),
-		).resolves.not.toThrowError();
+		await expect(fetch("hello", "world")).resolves.not.toThrowError();
 
 		expect(fetchFn).not.toHaveBeenCalled();
 
@@ -62,22 +62,20 @@ describe("makeMonitored", () => {
 		const onSuccess = vitest.fn();
 		const onError = vitest.fn();
 
-		const monitoredFetch = makeMonitored({
+		const fetch = makeMonitoredFetch({
 			fetchFn,
 			onFetching,
 			onSuccess,
 			onError,
 		});
 
-		await expect(
-			monitoredFetch("hello", "world"),
-		).rejects.toThrowError();
+		await expect(fetch("hello", "world")).rejects.toThrowError();
 
 		expect(onFetching).toHaveBeenNthCalledWith(1, true);
 		expect(onFetching).toHaveBeenNthCalledWith(2, false);
 
 		expect(onError).toHaveBeenCalledTimes(1);
-		expect(onError).toHaveBeenCalledWith("error!");
+		expect(onError).toHaveBeenCalledWith("error!", "hello", "world");
 
 		expect(onSuccess).not.toHaveBeenCalled();
 	});
@@ -93,7 +91,7 @@ describe("makeMonitored", () => {
 
 		(global as any).window = { addEventListener };
 
-		const monitoredFetch = makeMonitored({
+		const fetch = makeMonitoredFetch({
 			fetchFn,
 			onFetching,
 			onSuccess,
@@ -102,9 +100,6 @@ describe("makeMonitored", () => {
 		});
 
 		expect(addEventListener).toHaveBeenCalledTimes(1);
-		expect(addEventListener).toHaveBeenCalledWith(
-			"focusin",
-			monitoredFetch,
-		);
+		expect(addEventListener).toHaveBeenCalledWith("focusin", fetch);
 	});
 });
