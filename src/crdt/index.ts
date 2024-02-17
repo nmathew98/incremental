@@ -26,6 +26,7 @@ export const createCRDT = ({
 			merge(diff, data);
 			createNewVersion(timestamp);
 
+			const previous = versions.at(-2);
 			const latest = versions.at(-1);
 
 			if (!trackVersions) {
@@ -33,7 +34,7 @@ export const createCRDT = ({
 				updatedDates.splice(0, updatedDates.length - 1);
 			}
 
-			const onChangeResult = onChange(latest);
+			const onChangeResult = onChange(latest, previous);
 			return onChangeResult ?? latest;
 		};
 
