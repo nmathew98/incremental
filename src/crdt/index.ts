@@ -1,8 +1,10 @@
-export const createCRDT = ({
+import type { CRDT, CreateCRDTParameters } from "./types";
+
+export const createCRDT = <T extends Record<string, any>>({
 	initialValue,
 	onChange,
 	trackVersions = true,
-}) => {
+}: CreateCRDTParameters<T>): CRDT<T> => {
 	const versions: any[] = [];
 	const updatedDates: Date[] = [];
 	const data = new Map();
@@ -14,7 +16,7 @@ export const createCRDT = ({
 	const merge = (record, map = new Map()) =>
 		Object.entries(record).forEach(([key, value]) => map.set(key, value));
 
-	const dispatch = updates => {
+	const dispatch = (updates, options) => {
 		const apply = ({ timestamp, ...diff }) => {
 			// Last write wins
 			if (
@@ -35,6 +37,8 @@ export const createCRDT = ({
 			}
 
 			const onChangeResult = onChange(latest, previous);
+			options?.onChange?.(latest, previous);
+
 			return onChangeResult ?? latest;
 		};
 
@@ -52,5 +56,6 @@ export const createCRDT = ({
 			return versions.at(-1);
 		},
 		dispatch,
+		versions,
 	};
 };
