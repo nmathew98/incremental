@@ -1,17 +1,17 @@
 export interface CreateCRDTParameters<
 	D extends Record<string, any>,
-	C extends (next: D, previous: D) => unknown,
+	C extends (next: D, diff: Partial<D>, previous: D) => unknown,
 > {
 	initialValue: D;
 	onChange: C;
-	onSuccess?: (next: D, previous: D) => Promise<void>;
-	onError?: (next: D, previous: D) => Promise<void>;
+	onSuccess?: (next: D, diff: Partial<D>, previous: D) => Promise<void>;
+	onError?: (next: D, diff: Partial<D>, previous: D) => Promise<void>;
 	trackVersions?: boolean;
 }
 
 export interface CRDT<
 	D extends Record<string, any>,
-	C extends (next: D, previous: D) => any,
+	C extends (next: D, diff: Partial<D>, previous: D) => any,
 > {
 	readonly data: D;
 	dispatch: Dispatch<D, C>;
@@ -20,7 +20,7 @@ export interface CRDT<
 
 export interface Dispatch<
 	D extends Record<string, any>,
-	C extends (next: D, previous: D) => any,
+	C extends (next: D, diff: Partial<D>, previous: D) => any,
 > {
 	(
 		updates: Partial<D>,
@@ -32,7 +32,7 @@ export interface Dispatch<
 	): ReturnType<C> extends null | undefined ? D : ReturnType<C>;
 }
 
-export interface DispatchOptions<T extends Record<string, any>> {
-	onChange?: (next: T, previous: T) => void;
+export interface DispatchOptions<D extends Record<string, any>> {
+	onChange?: (next: D, diff: Partial<D>, previous: D) => void;
 	isPersisted?: boolean;
 }
