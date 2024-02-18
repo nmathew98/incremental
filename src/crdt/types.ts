@@ -39,7 +39,11 @@ export interface CreateCRDTParameters<
 	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onSuccess?: (next: D, diff: Partial<D>, previous: D) => void;
+	onSuccess?: (
+		next: D,
+		diff: D extends Array<any> ? D : Partial<D>,
+		previous: D,
+	) => void;
 
 	/**
 	 * If `onChange` is an async side effect, then `onSuccess` will only be triggered
@@ -49,7 +53,11 @@ export interface CreateCRDTParameters<
 	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onError?: (next: D, diff: Partial<D>, previous: D) => void;
+	onError?: (
+		next: D,
+		diff: D extends Array<any> ? D : Partial<D>,
+		previous: D,
+	) => void;
 
 	/**
 	 * Track the versions of the CRDT if `true`
