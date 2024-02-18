@@ -1,52 +1,64 @@
-import type { CRDT, CreateCRDTParameters } from "./types";
+import { produce } from "immer";
+import type { CRDT, CreateCRDTParameters, DispatchOptions } from "./types";
 
 export const createCRDT = <
 	D extends Record<string, any>,
-	C extends (next: D, previous: D) => any,
+	C extends (next: D, diff: Partial<D>, previous: D) => any,
 >({
 	initialValue,
 	onChange,
+	onSuccess,
+	onError,
 	trackVersions = false,
 }: CreateCRDTParameters<D, C>): CRDT<D, C> => {
 	const versions: any[] = [];
-	const updatedDates: Date[] = [];
 	const data = new Map();
 
-	const createNewVersion = (timestamp?: Date) => {
+	const createNewVersion = () => {
 		versions.push(Object.fromEntries(data));
-		updatedDates.push(timestamp ?? new Date());
 	};
-	const merge = (record, map = new Map()) =>
-		Object.entries(record).forEach(([key, value]) => map.set(key, value));
+	const merge = (record, map) => {
+		const diff = Object.entries(record).filter(
+			([key, value]) => !map.has(key) || map.get(key) !== value,
+		);
 
-	const dispatch = (updates, options) => {
-		const apply = ({ timestamp, ...diff }) => {
-			// Last write wins
-			if (
-				timestamp instanceof Date &&
-				timestamp < (updatedDates.at(-1) as Date)
-			)
-				return versions.at(-1);
+		diff.forEach(([key, value]) => map.set(key, value));
 
-			merge(diff, data);
-			createNewVersion(timestamp);
+		return diff;
+	};
+
+	const dispatch = (updates, options?: DispatchOptions<D>) => {
+		const apply = (updates: Partial<D>) => {
+			const diff = Object.fromEntries(merge(updates, data)) as Partial<D>;
+			createNewVersion();
 
 			const previous = versions.at(-2);
 			const latest = versions.at(-1);
 
-			if (!trackVersions) {
-				versions.splice(0, versions.length - 1);
-				updatedDates.splice(0, updatedDates.length - 1);
+			if (!trackVersions) versions.splice(0, versions.length - 1);
+
+			options?.onChange?.(latest, diff, previous);
+
+			if (!options?.isPersisted) {
+				// If `onChange` returns a `Promise` then the side-effect is
+				// async and we want to wait until it is done
+				// before sync effects
+				const onChangeResult = onChange(latest, diff, previous)
+					?.then?.(result => {
+						onSuccess?.(latest, diff, previous);
+
+						return result;
+					})
+					.catch(() => void onError?.(latest, diff, previous));
+
+				return onChangeResult ?? latest;
 			}
 
-			const onChangeResult = onChange(latest, previous);
-			options?.onChange?.(latest, previous);
-
-			return onChangeResult ?? latest;
+			return latest;
 		};
 
 		if (typeof updates === "function")
-			return apply(updates(versions.at(-1)));
+			return apply(produce(versions.at(-1) as Partial<D>, updates));
 
 		return apply(updates);
 	};

@@ -20,6 +20,7 @@ describe("createCRDT", () => {
 					...INITIAL_VALUE,
 					...FIRST_UPDATE,
 				},
+				FIRST_UPDATE,
 				INITIAL_VALUE,
 			);
 			expect(onChange).toBeCalledTimes(1);
@@ -30,7 +31,7 @@ describe("createCRDT", () => {
 			const setState = vitest.fn();
 
 			const crdt = createCRDT({
-				initialValue: Object.create(null),
+				initialValue: INITIAL_VALUE,
 				onChange: setState,
 			});
 
@@ -39,7 +40,11 @@ describe("createCRDT", () => {
 
 			crdt.dispatch(previous => ({ ...previous, ...FIRST_UPDATE }));
 
-			expect(setState).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
+			expect(setState).toBeCalledWith(
+				FIRST_UPDATE,
+				FIRST_UPDATE,
+				INITIAL_VALUE,
+			);
 			expect(setState).toBeCalledTimes(1);
 
 			crdt.dispatch(previous => ({ ...previous, ...SECOND_UPDATE }));
@@ -49,6 +54,7 @@ describe("createCRDT", () => {
 					...FIRST_UPDATE,
 					...SECOND_UPDATE,
 				},
+				SECOND_UPDATE,
 				FIRST_UPDATE,
 			);
 			expect(setState).toBeCalledTimes(2);
@@ -72,14 +78,18 @@ describe("createCRDT", () => {
 			});
 
 			const { dispatch } = createCRDT({
-				initialValue: Object.create(null),
+				initialValue: INITIAL_VALUE,
 				onChange: upsert,
 			});
 
 			const FIRST_UPDATE = { a: 1 };
 			dispatch(FIRST_UPDATE);
 
-			expect(upsert).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
+			expect(upsert).toBeCalledWith(
+				FIRST_UPDATE,
+				FIRST_UPDATE,
+				INITIAL_VALUE,
+			);
 			expect(upsert).toBeCalledTimes(1);
 		});
 
@@ -101,25 +111,6 @@ describe("createCRDT", () => {
 			expect(latest).not.toBe(INITIAL_VALUE);
 			expect(FINAL_VALUE).toBe(latest);
 		});
-
-		it("only applies the latest updates", () => {
-			const onChange = vitest.fn();
-
-			const crdt = createCRDT({
-				initialValue: Object.create(null),
-				onChange,
-			});
-
-			const FIRST_UPDATE = {
-				timestamp: new Date(0),
-				a: 1,
-			};
-
-			crdt.dispatch(FIRST_UPDATE);
-
-			expect(onChange).not.toBeCalled();
-			expect(crdt.data).toEqual(Object.create(null));
-		});
 	});
 
 	describe("`data`", () => {
@@ -130,6 +121,97 @@ describe("createCRDT", () => {
 			});
 
 			expect(crdt.data).toBe(crdt.data);
+		});
+
+		it("nested property references stay the same if they are not changed", () => {
+			const INITIAL_VALUE: Record<string, any> = {
+				a: {
+					b: {
+						c: {
+							d: 1,
+						},
+						e: {
+							f: 1,
+						},
+					},
+					g: 1,
+				},
+				h: 1,
+			};
+			const onChange = vitest.fn();
+
+			const crdt = createCRDT({
+				initialValue: INITIAL_VALUE,
+				onChange,
+			});
+
+			crdt.dispatch(previousValue => {
+				previousValue.a.b.c = {
+					d: 2,
+					h: 1,
+				};
+
+				return previousValue;
+			});
+
+			expect(crdt.data.a).not.toBe(INITIAL_VALUE.a);
+			expect(crdt.data.a.b).not.toBe(INITIAL_VALUE.a.b);
+			expect(crdt.data.a.b.c).not.toBe(INITIAL_VALUE.a.b.c);
+			expect(crdt.data.a.b.c.d).toEqual(2);
+			expect(crdt.data.a.b.c.h).toEqual(1);
+
+			expect(crdt.data.a.b.e).toBe(INITIAL_VALUE.a.b.e);
+			expect(crdt.data).not.toBe(INITIAL_VALUE);
+
+			expect(onChange).toBeCalledWith(
+				crdt.data,
+				{ a: crdt.data.a },
+				INITIAL_VALUE,
+			);
+		});
+
+		it("array references change if mutated", () => {
+			const INITIAL_VALUE = {
+				a: {
+					b: [1, 2],
+				},
+				c: {
+					d: 1,
+				},
+				e: [1, 2],
+			};
+			const onChange = vitest.fn();
+
+			const crdt = createCRDT({
+				initialValue: INITIAL_VALUE,
+				onChange,
+			});
+
+			crdt.dispatch(previousValue => {
+				previousValue.a.b.push(3);
+
+				return previousValue;
+			});
+
+			expect(crdt.data.a.b).toEqual([1, 2, 3]);
+			expect(crdt.data.c).toBe(INITIAL_VALUE.c);
+			expect(crdt.data.e).toBe(INITIAL_VALUE.e);
+
+			expect(onChange).toHaveBeenCalledWith(
+				crdt.data,
+				{ a: { b: [1, 2, 3] } },
+				INITIAL_VALUE,
+			);
+
+			crdt.dispatch(previousValue => {
+				previousValue.e.push(3);
+
+				return previousValue;
+			});
+
+			expect(crdt.data.e).toEqual([1, 2, 3]);
+			expect(crdt.data.e).not.toBe(INITIAL_VALUE.e);
+			expect(crdt.data.e).not.toBe(crdt.data.a.b);
 		});
 	});
 });

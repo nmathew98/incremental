@@ -12,6 +12,7 @@ Simple universal composable asynchronous state management utilities.
 -   Retry mechanism ✅
 -   Caching ✅
 -   Structural sharing ✅
+-   Framework agnostic (note: BYO framework wrappers) ✅
 
 ## Background
 
@@ -28,15 +29,13 @@ On the frontend, we often have to fetch data from the backend and then apply upd
 ```typescript
 const user = createCRDT({
 	initialValue: await service.getUserById,
-	onChange: over(
-		makeMonitor({
-			fetchFn: service.putUser,
-			onFetching: toggleLoadingIndicator,
-			// For `fetchFn` to throw `onError`
-			// `onError` has to throw
-			onError: displayError,
-		}),
-	),
+	onChange: makeMonitor({
+		fetchFn: service.putUser,
+		onFetching: toggleLoadingIndicator,
+		// For `fetchFn` to throw `onError`
+		// `onError` has to throw
+		onError: displayError,
+	}),
 });
 
 const onSubmit = updates => user.dispatch(updates, { onChange: setUser });
@@ -55,56 +54,26 @@ const chatMessages = createCRDT({
 	}),
 });
 
-// Updates which are dispatched with a `timestamp` specified do not trigger `onChange`
 const newMessagesSocket = new WebSocket(wsUri);
 newMessagesSocket.onmessage = event =>
-	dispatch(previousChatMessages => {
-		const message = JSON.parse(event.data);
+	dispatch(
+		previousChat => {
+			const message = JSON.parse(event.data);
 
-		return {
-			timestamp: new Date(event.data.timestamp),
-			// when it comes to subscriptions and arrays, supply the latest value in full
-			// and dedupe
-			value: uniqBy(
-				[...previousChatMessages.value, ...event.data.value],
-				"uuid",
-			),
-		};
-	});
+			previousChat.messages.push(message.data);
+
+			return previousChat;
+			// If `isPersisted`, then `chatMessages.onChange`
+			// is not invoked
+		},
+		{ isPersisted: true },
+	);
 
 const onSubmitChatMessage = newMessage =>
-	chatMessages.dispatch(previousChatMessages => ({
-		...previousChatMessages,
-		value: [...previousChatMessages.value, newMessage],
-	}));
+	chatMessages.dispatch(previousChat =>
+		previousChat.messages.push(newMessage),
+	);
 ```
-
-On the backend, we need to apply updates to a model and ideally we would want to protect our application data models from the underlying database models:
-
-```typescript
-const user = createCRDT({
-	initialValue: await repo.getUserByUuid(userUuid),
-	onChange: over(
-		makeRetry({
-			retryFn: repo.putUserByUuid,
-		}),
-		makeRetry({
-			retryFn: repo.deleteUserByUuid, // soft delete
-		}),
-	),
-});
-
-if (!userSchema.isValid(req.body, user.data)) {
-	throw new Error("User is invalid");
-}
-
-await Promise.allSettled(user.dispatch(req.body));
-```
-
-Key points:
-
--   `dispatch` does not apply nested updates, so if a field in the `initialValue` is a record or an array, then the field must be specified in full.
--   `data` is really a getter, so upon re-renders, `data` is up to date. Otherwise, rely on property access instead of destructuring to get the latest value.
 
 More information in:
 
