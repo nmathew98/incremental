@@ -47,6 +47,7 @@ or, sometimes we have incremental updates from multiple sources which need to be
 const chatMessages = createCRDT({
 	initialValue: await service.getChatMessages(currentUser, recipient),
 	onChange: makeMonitor({
+		// makeRetry exponentially backs off
 		fetchFn: makeRetry({
 			retryFn: service.putChatMessage,
 		}),
@@ -70,8 +71,8 @@ newMessagesSocket.onmessage = event =>
 	);
 
 const onSubmitChatMessage = newMessage =>
-	chatMessages.dispatch(previousChat =>
-		previousChat.messages.push(newMessage),
+	chatMessages.dispatch(
+		previousChat => void previousChat.messages.push(newMessage),
 	);
 ```
 

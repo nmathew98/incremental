@@ -203,15 +203,29 @@ describe("createCRDT", () => {
 				INITIAL_VALUE,
 			);
 
-			crdt.dispatch(previousValue => {
-				previousValue.e.push(3);
-
-				return previousValue;
-			});
+			crdt.dispatch(previousValue => void previousValue.e.push(3));
 
 			expect(crdt.data.e).toEqual([1, 2, 3]);
 			expect(crdt.data.e).not.toBe(INITIAL_VALUE.e);
 			expect(crdt.data.e).not.toBe(crdt.data.a.b);
+		});
+
+		it("accepts arrays", () => {
+			const INITIAL_VALUE = [1, 2, 3];
+			const onChange = vitest.fn();
+
+			const crdt = createCRDT({
+				initialValue: INITIAL_VALUE,
+				onChange,
+			});
+
+			crdt.dispatch(previousValue => void previousValue.push(4));
+
+			expect(crdt.data.length).toBeGreaterThan(INITIAL_VALUE.length);
+			expect(crdt.data.at(-1)).toEqual(4);
+
+			expect(onChange).toBeCalledTimes(1);
+			expect(onChange).toBeCalledWith([1, 2, 3, 4], [4], [1, 2, 3]);
 		});
 	});
 });

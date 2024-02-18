@@ -1,8 +1,13 @@
 import { produce } from "immer";
-import type { CRDT, CreateCRDTParameters, DispatchOptions } from "./types";
+import type {
+	CRDT,
+	CreateCRDTParameters,
+	Dispatch,
+	DispatchOptions,
+} from "./types";
 
 export const createCRDT = <
-	D extends Record<string, any>,
+	D extends Record<string | number | symbol, any> | Array<any>,
 	C extends (next: D, diff: Partial<D>, previous: D) => any,
 >({
 	initialValue,
@@ -10,12 +15,16 @@ export const createCRDT = <
 	onSuccess,
 	onError,
 	trackVersions = false,
-}: CreateCRDTParameters<D, C>): CRDT<D, C> => {
+}: CreateCRDTParameters<D, C>): CRDT<D> => {
 	const versions: any[] = [];
 	const data = new Map();
 
 	const createNewVersion = () => {
-		versions.push(Object.fromEntries(data));
+		versions.push(
+			Array.isArray(initialValue)
+				? Array.from(data.values())
+				: Object.fromEntries(data),
+		);
 	};
 	const merge = (record, map) => {
 		const diff = Object.entries(record).filter(
@@ -27,9 +36,11 @@ export const createCRDT = <
 		return diff;
 	};
 
-	const dispatch = (updates, options?: DispatchOptions<D>) => {
+	const dispatch: Dispatch<D> = (updates, options?: DispatchOptions<D>) => {
 		const apply = (updates: Partial<D>) => {
-			const diff = Object.fromEntries(merge(updates, data)) as Partial<D>;
+			const diff: any = Array.isArray(initialValue)
+				? merge(updates, data).map(([_, value]) => value)
+				: (Object.fromEntries(merge(updates, data)) as Partial<D>);
 			createNewVersion();
 
 			const previous = versions.at(-2);

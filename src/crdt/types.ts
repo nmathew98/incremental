@@ -1,11 +1,17 @@
 export interface CreateCRDTParameters<
-	D extends Record<string, any>,
-	C extends (next: D, diff: Partial<D>, previous: D) => unknown,
+	D extends Record<string | number | symbol, any> =
+		| Record<string | number | symbol, any>
+		| Array<any>,
+	C extends (next: D, diff: Partial<D>, previous: D) => unknown = (
+		next: D,
+		diff: Partial<D>,
+		previous: D,
+	) => unknown,
 > {
 	/**
 	 * Document to initialize the CRDT to
 	 *
-	 * Must be a record type
+	 * Should be a `Record` or an `Array`
 	 */
 	initialValue: D;
 
@@ -29,7 +35,7 @@ export interface CreateCRDTParameters<
 	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onSuccess?: (next: D, diff: Partial<D>, previous: D) => Promise<void>;
+	onSuccess?: (next: D, diff: Partial<D>, previous: D) => void;
 
 	/**
 	 * If `onChange` is an async side effect, then `onSuccess` will only be triggered
@@ -39,7 +45,7 @@ export interface CreateCRDTParameters<
 	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onError?: (next: D, diff: Partial<D>, previous: D) => Promise<void>;
+	onError?: (next: D, diff: Partial<D>, previous: D) => void;
 
 	/**
 	 * Track the versions of the CRDT if `true`
@@ -52,8 +58,9 @@ export interface CreateCRDTParameters<
 }
 
 export interface CRDT<
-	D extends Record<string, any>,
-	C extends (next: D, diff: Partial<D>, previous: D) => any,
+	D extends Record<string | number | symbol, any> =
+		| Record<string | number | symbol, any>
+		| Array<any>,
 > {
 	/**
 	 * Is a getter so rely on property access to obtain the latest version
@@ -65,7 +72,7 @@ export interface CRDT<
 	 *
 	 * Changes can be specified or computed
 	 */
-	dispatch: Dispatch<D, C>;
+	dispatch: Dispatch<D>;
 
 	/**
 	 * All versions of the CRDT
@@ -76,20 +83,21 @@ export interface CRDT<
 }
 
 export interface Dispatch<
-	D extends Record<string, any>,
-	C extends (next: D, diff: Partial<D>, previous: D) => any,
+	D extends Record<string | number | symbol, any> =
+		| Record<string | number | symbol, any>
+		| Array<any>,
 > {
-	(
-		updates: Partial<D>,
-		options?: DispatchOptions<D>,
-	): ReturnType<C> extends null | undefined ? D : ReturnType<C>;
-	(
-		updates: (state: D) => Partial<D>,
-		options?: DispatchOptions<D>,
-	): ReturnType<C> extends null | undefined ? D : ReturnType<C>;
+	(updates: Partial<D>, options?: DispatchOptions<D>): unknown;
+	(updates: Dispatcher<D>, options?: DispatchOptions<D>): unknown;
 }
 
-export interface DispatchOptions<D extends Record<string, any>> {
+type Dispatcher<D> = (state: D) => void | Partial<D>;
+
+export interface DispatchOptions<
+	D extends Record<string | number | symbol, any> =
+		| Record<string | number | symbol, any>
+		| Array<any>,
+> {
 	/**
 	 * If specified will always be invoked during `dispatch` regardless of `isPersisted`
 	 *
