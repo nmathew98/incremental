@@ -20,6 +20,7 @@ describe("createCRDT", () => {
 					...INITIAL_VALUE,
 					...FIRST_UPDATE,
 				},
+				FIRST_UPDATE,
 				INITIAL_VALUE,
 			);
 			expect(onChange).toBeCalledTimes(1);
@@ -30,7 +31,7 @@ describe("createCRDT", () => {
 			const setState = vitest.fn();
 
 			const crdt = createCRDT({
-				initialValue: Object.create(null),
+				initialValue: INITIAL_VALUE,
 				onChange: setState,
 			});
 
@@ -39,7 +40,11 @@ describe("createCRDT", () => {
 
 			crdt.dispatch(previous => ({ ...previous, ...FIRST_UPDATE }));
 
-			expect(setState).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
+			expect(setState).toBeCalledWith(
+				FIRST_UPDATE,
+				FIRST_UPDATE,
+				INITIAL_VALUE,
+			);
 			expect(setState).toBeCalledTimes(1);
 
 			crdt.dispatch(previous => ({ ...previous, ...SECOND_UPDATE }));
@@ -49,6 +54,7 @@ describe("createCRDT", () => {
 					...FIRST_UPDATE,
 					...SECOND_UPDATE,
 				},
+				SECOND_UPDATE,
 				FIRST_UPDATE,
 			);
 			expect(setState).toBeCalledTimes(2);
@@ -72,14 +78,18 @@ describe("createCRDT", () => {
 			});
 
 			const { dispatch } = createCRDT({
-				initialValue: Object.create(null),
+				initialValue: INITIAL_VALUE,
 				onChange: upsert,
 			});
 
 			const FIRST_UPDATE = { a: 1 };
 			dispatch(FIRST_UPDATE);
 
-			expect(upsert).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
+			expect(upsert).toBeCalledWith(
+				FIRST_UPDATE,
+				FIRST_UPDATE,
+				INITIAL_VALUE,
+			);
 			expect(upsert).toBeCalledTimes(1);
 		});
 
@@ -111,6 +121,53 @@ describe("createCRDT", () => {
 			});
 
 			expect(crdt.data).toBe(crdt.data);
+		});
+
+		it("nested property references stay the same if they are not changed", () => {
+			const INITIAL_VALUE: Record<string, any> = {
+				a: {
+					b: {
+						c: {
+							d: 1,
+						},
+						e: {
+							f: 1,
+						},
+					},
+					g: 1,
+				},
+				h: 1,
+			};
+			const onChange = vitest.fn();
+
+			const crdt = createCRDT({
+				initialValue: INITIAL_VALUE,
+				onChange,
+			});
+
+			crdt.dispatch(previousValue => {
+				previousValue.a.b.c = {
+					d: 2,
+					h: 1,
+				};
+
+				return previousValue;
+			});
+
+			expect(crdt.data.a).not.toBe(INITIAL_VALUE.a);
+			expect(crdt.data.a.b).not.toBe(INITIAL_VALUE.a.b);
+			expect(crdt.data.a.b.c).not.toBe(INITIAL_VALUE.a.b.c);
+			expect(crdt.data.a.b.c.d).toEqual(2);
+			expect(crdt.data.a.b.c.h).toEqual(1);
+
+			expect(crdt.data.a.b.e).toBe(INITIAL_VALUE.a.b.e);
+			expect(crdt.data).not.toBe(INITIAL_VALUE);
+
+			expect(onChange).toBeCalledWith(
+				crdt.data,
+				{ a: crdt.data.a },
+				INITIAL_VALUE,
+			);
 		});
 	});
 });
