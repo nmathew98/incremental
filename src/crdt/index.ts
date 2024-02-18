@@ -1,4 +1,4 @@
-import type { CRDT, CreateCRDTParameters } from "./types";
+import type { CRDT, CreateCRDTParameters, DispatchOptions } from "./types";
 
 export const createCRDT = <
 	D extends Record<string, any>,
@@ -11,46 +11,38 @@ export const createCRDT = <
 	trackVersions = false,
 }: CreateCRDTParameters<D, C>): CRDT<D, C> => {
 	const versions: any[] = [];
-	const updatedDates: Date[] = [];
 	const data = new Map();
 
-	const createNewVersion = (timestamp?: Date) => {
+	const createNewVersion = () => {
 		versions.push(Object.fromEntries(data));
-		updatedDates.push(timestamp ?? new Date());
 	};
 	const merge = (record, map = new Map()) =>
 		Object.entries(record).forEach(([key, value]) => map.set(key, value));
 
-	const dispatch = (updates, options) => {
-		const apply = ({ timestamp, ...diff }) => {
-			// Last write wins
-			if (
-				timestamp instanceof Date &&
-				timestamp < (updatedDates.at(-1) as Date)
-			)
-				return versions.at(-1);
-
+	const dispatch = (updates, options?: DispatchOptions<D>) => {
+		const apply = (diff: Partial<D>) => {
 			merge(diff, data);
-			createNewVersion(timestamp);
+			createNewVersion();
 
 			const previous = versions.at(-2);
 			const latest = versions.at(-1);
 
-			if (!trackVersions) {
-				versions.splice(0, versions.length - 1);
-				updatedDates.splice(0, updatedDates.length - 1);
-			}
-
-			// If `onChange` returns a `Promise` then the side-effect is
-			// async and we want to wait until it is done
-			// before sync effects
-			const onChangeResult = onChange(latest, previous)
-				?.then?.(() => void onSuccess?.(latest, previous))
-				.catch(() => void onError?.(latest, previous));
+			if (!trackVersions) versions.splice(0, versions.length - 1);
 
 			options?.onChange?.(latest, previous);
 
-			return onChangeResult ?? latest;
+			if (!options?.isPersisted) {
+				// If `onChange` returns a `Promise` then the side-effect is
+				// async and we want to wait until it is done
+				// before sync effects
+				const onChangeResult = onChange(latest, previous)
+					?.then?.(result => (onSuccess?.(latest, previous), result))
+					.catch(() => void onError?.(latest, previous));
+
+				return onChangeResult ?? latest;
+			}
+
+			return latest;
 		};
 
 		if (typeof updates === "function")
