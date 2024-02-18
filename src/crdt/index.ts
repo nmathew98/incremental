@@ -6,6 +6,8 @@ export const createCRDT = <
 >({
 	initialValue,
 	onChange,
+	onSuccess,
+	onError,
 	trackVersions = false,
 }: CreateCRDTParameters<D, C>): CRDT<D, C> => {
 	const versions: any[] = [];
@@ -39,7 +41,13 @@ export const createCRDT = <
 				updatedDates.splice(0, updatedDates.length - 1);
 			}
 
-			const onChangeResult = onChange(latest, previous);
+			// If `onChange` returns a `Promise` then the side-effect is
+			// async and we want to wait until it is done
+			// before sync effects
+			const onChangeResult = onChange(latest, previous)
+				?.then?.(() => void onSuccess?.(latest, previous))
+				.catch(() => void onError?.(latest, previous));
+
 			options?.onChange?.(latest, previous);
 
 			return onChangeResult ?? latest;

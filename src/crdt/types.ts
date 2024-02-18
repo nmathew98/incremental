@@ -4,6 +4,8 @@ export interface CreateCRDTParameters<
 > {
 	initialValue: D;
 	onChange: C;
+	onSuccess?: (next: D, previous: D) => Promise<void>;
+	onError?: (next: D, previous: D) => Promise<void>;
 	trackVersions?: boolean;
 }
 
