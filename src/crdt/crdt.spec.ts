@@ -101,25 +101,6 @@ describe("createCRDT", () => {
 			expect(latest).not.toBe(INITIAL_VALUE);
 			expect(FINAL_VALUE).toBe(latest);
 		});
-
-		it("only applies the latest updates", () => {
-			const onChange = vitest.fn();
-
-			const crdt = createCRDT({
-				initialValue: Object.create(null),
-				onChange,
-			});
-
-			const FIRST_UPDATE = {
-				timestamp: new Date(0),
-				a: 1,
-			};
-
-			crdt.dispatch(FIRST_UPDATE);
-
-			expect(onChange).not.toBeCalled();
-			expect(crdt.data).toEqual(Object.create(null));
-		});
 	});
 
 	describe("`data`", () => {

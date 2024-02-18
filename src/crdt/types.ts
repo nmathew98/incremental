@@ -23,15 +23,16 @@ export interface Dispatch<
 	C extends (next: D, previous: D) => any,
 > {
 	(
-		updates: Partial<D> & { timestamp?: Date },
+		updates: Partial<D>,
 		options?: DispatchOptions<D>,
 	): ReturnType<C> extends null | undefined ? D : ReturnType<C>;
 	(
-		updates: (state: D) => Partial<D> & { timestamp?: Date },
+		updates: (state: D) => Partial<D>,
 		options?: DispatchOptions<D>,
 	): ReturnType<C> extends null | undefined ? D : ReturnType<C>;
 }
 
 export interface DispatchOptions<T extends Record<string, any>> {
 	onChange?: (next: T, previous: T) => void;
+	isPersisted?: boolean;
 }
