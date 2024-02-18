@@ -21,7 +21,6 @@ export interface CreateCRDTParameters<
 	 * is specified when `dispatch`ing the changes
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
 	onChange: C;
@@ -31,7 +30,6 @@ export interface CreateCRDTParameters<
 	 * if `onChange` resolves successfully
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
 	onSuccess?: (next: D, previous: D) => void;
@@ -41,7 +39,6 @@ export interface CreateCRDTParameters<
 	 * if `onChange` rejects
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
 	onError?: (next: D, previous: D) => void;
@@ -101,7 +98,6 @@ export interface DispatchOptions<
 	 * If specified will always be invoked during `dispatch` regardless of `isPersisted`
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
 	onChange?: (next: D, previous: D) => void;
