@@ -56,20 +56,23 @@ const chatMessages = createCRDT({
 
 const newMessagesSocket = new WebSocket(wsUri);
 newMessagesSocket.onmessage = event =>
-	dispatch(previousChat => {
-		const message = JSON.parse(event.data);
+	dispatch(
+		previousChat => {
+			const message = JSON.parse(event.data);
 
-		previousChat.messages.push(message.data);
+			previousChat.messages.push(message.data);
 
-		return previousChat;
-	// If `isPersisted`, then `chatMessages.onChange`
-	// is not invoked
-	}, { isPersisted: true });
+			return previousChat;
+			// If `isPersisted`, then `chatMessages.onChange`
+			// is not invoked
+		},
+		{ isPersisted: true },
+	);
 
 const onSubmitChatMessage = newMessage =>
-	chatMessages.dispatch(previousChat => {
-		previousChat.messages.push(newMessage);
-	};
+	chatMessages.dispatch(previousChat =>
+		previousChat.messages.push(newMessage),
+	);
 ```
 
 On the backend, we need to apply updates to a model and ideally we would want to protect our application data models from the underlying database models:
