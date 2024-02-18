@@ -20,7 +20,6 @@ describe("createCRDT", () => {
 					...INITIAL_VALUE,
 					...FIRST_UPDATE,
 				},
-				FIRST_UPDATE,
 				INITIAL_VALUE,
 			);
 			expect(onChange).toBeCalledTimes(1);
@@ -40,11 +39,7 @@ describe("createCRDT", () => {
 
 			crdt.dispatch(previous => ({ ...previous, ...FIRST_UPDATE }));
 
-			expect(setState).toBeCalledWith(
-				FIRST_UPDATE,
-				FIRST_UPDATE,
-				INITIAL_VALUE,
-			);
+			expect(setState).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
 			expect(setState).toBeCalledTimes(1);
 
 			crdt.dispatch(previous => ({ ...previous, ...SECOND_UPDATE }));
@@ -54,7 +49,6 @@ describe("createCRDT", () => {
 					...FIRST_UPDATE,
 					...SECOND_UPDATE,
 				},
-				SECOND_UPDATE,
 				FIRST_UPDATE,
 			);
 			expect(setState).toBeCalledTimes(2);
@@ -85,11 +79,7 @@ describe("createCRDT", () => {
 			const FIRST_UPDATE = { a: 1 };
 			dispatch(FIRST_UPDATE);
 
-			expect(upsert).toBeCalledWith(
-				FIRST_UPDATE,
-				FIRST_UPDATE,
-				INITIAL_VALUE,
-			);
+			expect(upsert).toBeCalledWith(FIRST_UPDATE, INITIAL_VALUE);
 			expect(upsert).toBeCalledTimes(1);
 		});
 
@@ -163,11 +153,7 @@ describe("createCRDT", () => {
 			expect(crdt.data.a.b.e).toBe(INITIAL_VALUE.a.b.e);
 			expect(crdt.data).not.toBe(INITIAL_VALUE);
 
-			expect(onChange).toBeCalledWith(
-				crdt.data,
-				{ a: crdt.data.a },
-				INITIAL_VALUE,
-			);
+			expect(onChange).toBeCalledWith(crdt.data, INITIAL_VALUE);
 		});
 
 		it("array references change if mutated", () => {
@@ -197,11 +183,7 @@ describe("createCRDT", () => {
 			expect(crdt.data.c).toBe(INITIAL_VALUE.c);
 			expect(crdt.data.e).toBe(INITIAL_VALUE.e);
 
-			expect(onChange).toHaveBeenCalledWith(
-				crdt.data,
-				{ a: { b: [1, 2, 3] } },
-				INITIAL_VALUE,
-			);
+			expect(onChange).toHaveBeenCalledWith(crdt.data, INITIAL_VALUE);
 
 			crdt.dispatch(previousValue => void previousValue.e.push(3));
 
@@ -225,7 +207,7 @@ describe("createCRDT", () => {
 			expect(crdt.data.at(-1)).toEqual(4);
 
 			expect(onChange).toBeCalledTimes(1);
-			expect(onChange).toBeCalledWith([1, 2, 3, 4], [4], [1, 2, 3]);
+			expect(onChange).toBeCalledWith([1, 2, 3, 4], [1, 2, 3]);
 		});
 	});
 });
