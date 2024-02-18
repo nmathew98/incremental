@@ -2,9 +2,13 @@ export interface CreateCRDTParameters<
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	C extends (next: D, diff: Partial<D>, previous: D) => unknown = (
+	C extends (
 		next: D,
-		diff: Partial<D>,
+		diff: D extends Array<any> ? D : Partial<D>,
+		previous: D,
+	) => unknown = (
+		next: D,
+		diff: D extends Array<any> ? D : Partial<D>,
 		previous: D,
 	) => unknown,
 > {
@@ -105,7 +109,11 @@ export interface DispatchOptions<
 	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onChange?: (next: D, diff: Partial<D>, previous: D) => void;
+	onChange?: (
+		next: D,
+		diff: D extends Array<any> ? D : Partial<D>,
+		previous: D,
+	) => void;
 
 	/**
 	 * If `true`, then global side effects are disabled

@@ -8,7 +8,11 @@ import type {
 
 export const createCRDT = <
 	D extends Record<string | number | symbol, any> | Array<any>,
-	C extends (next: D, diff: Partial<D>, previous: D) => any,
+	C extends (
+		next: D,
+		diff: D extends Array<any> ? D : Partial<D>,
+		previous: D,
+	) => any,
 >({
 	initialValue,
 	onChange,
@@ -37,10 +41,10 @@ export const createCRDT = <
 	};
 
 	const dispatch: Dispatch<D> = (updates, options?: DispatchOptions<D>) => {
-		const apply = (updates: Partial<D>) => {
+		const apply = updates => {
 			const diff: any = Array.isArray(initialValue)
 				? merge(updates, data).map(([_, value]) => value)
-				: (Object.fromEntries(merge(updates, data)) as Partial<D>);
+				: Object.fromEntries(merge(updates, data));
 			createNewVersion();
 
 			const previous = versions.at(-2);
@@ -69,7 +73,7 @@ export const createCRDT = <
 		};
 
 		if (typeof updates === "function")
-			return apply(produce(versions.at(-1) as Partial<D>, updates));
+			return apply(produce(versions.at(-1), updates));
 
 		return apply(updates);
 	};
