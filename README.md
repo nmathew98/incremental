@@ -75,28 +75,6 @@ const onSubmitChatMessage = newMessage =>
 	);
 ```
 
-On the backend, we need to apply updates to a model and ideally we would want to protect our application data models from the underlying database models:
-
-```typescript
-const user = createCRDT({
-	initialValue: await repo.getUserByUuid(userUuid),
-	onChange: over(
-		makeRetry({
-			retryFn: repo.putUserByUuid,
-		}),
-		makeRetry({
-			retryFn: repo.deleteUserByUuid, // soft delete
-		}),
-	),
-});
-
-if (!userSchema.isValid(req.body, user.data)) {
-	throw new Error("User is invalid");
-}
-
-await Promise.allSettled(user.dispatch(req.body));
-```
-
 More information in:
 
 -   `src/crdt/crdt.spec.ts`
