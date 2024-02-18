@@ -12,6 +12,7 @@ Simple universal composable asynchronous state management utilities.
 -   Retry mechanism ✅
 -   Caching ✅
 -   Structural sharing ✅
+-   Framework agnostic (note: BYO framework wrappers) ✅
 
 ## Background
 
@@ -92,11 +93,6 @@ if (!userSchema.isValid(req.body, user.data)) {
 
 await Promise.allSettled(user.dispatch(req.body));
 ```
-
-Key points:
-
--   `dispatch` does not apply nested updates, so if a field in the `initialValue` is a record or an array, then the field must be specified in full.
--   `data` is really a getter, so upon re-renders, `data` is up to date. Otherwise, rely on property access instead of destructuring to get the latest value.
 
 More information in:
 
