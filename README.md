@@ -28,15 +28,13 @@ On the frontend, we often have to fetch data from the backend and then apply upd
 ```typescript
 const user = createCRDT({
 	initialValue: await service.getUserById,
-	onChange: over(
-		makeMonitor({
-			fetchFn: service.putUser,
-			onFetching: toggleLoadingIndicator,
-			// For `fetchFn` to throw `onError`
-			// `onError` has to throw
-			onError: displayError,
-		}),
-	),
+	onChange: makeMonitor({
+		fetchFn: service.putUser,
+		onFetching: toggleLoadingIndicator,
+		// For `fetchFn` to throw `onError`
+		// `onError` has to throw
+		onError: displayError,
+	}),
 });
 
 const onSubmit = updates => user.dispatch(updates, { onChange: setUser });
@@ -55,28 +53,22 @@ const chatMessages = createCRDT({
 	}),
 });
 
-// Updates which are dispatched with a `timestamp` specified do not trigger `onChange`
 const newMessagesSocket = new WebSocket(wsUri);
 newMessagesSocket.onmessage = event =>
-	dispatch(previousChatMessages => {
+	dispatch(previousChat => {
 		const message = JSON.parse(event.data);
 
-		return {
-			timestamp: new Date(event.data.timestamp),
-			// when it comes to subscriptions and arrays, supply the latest value in full
-			// and dedupe
-			value: uniqBy(
-				[...previousChatMessages.value, ...event.data.value],
-				"uuid",
-			),
-		};
-	});
+		previousChat.messages.push(message.data);
+
+		return previousChat;
+	// If `isPersisted`, then `chatMessages.onChange`
+	// is not invoked
+	}, { isPersisted: true });
 
 const onSubmitChatMessage = newMessage =>
-	chatMessages.dispatch(previousChatMessages => ({
-		...previousChatMessages,
-		value: [...previousChatMessages.value, newMessage],
-	}));
+	chatMessages.dispatch(previousChat => {
+		previousChat.messages.push(newMessage);
+	};
 ```
 
 On the backend, we need to apply updates to a model and ideally we would want to protect our application data models from the underlying database models:
