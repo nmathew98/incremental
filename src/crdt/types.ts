@@ -55,8 +55,23 @@ export interface CRDT<
 	D extends Record<string, any>,
 	C extends (next: D, diff: Partial<D>, previous: D) => any,
 > {
+	/**
+	 * Is a getter so rely on property access to obtain the latest version
+	 */
 	readonly data: D;
+
+	/**
+	 * Dispatch changes to the CRDT
+	 *
+	 * Changes can be specified or computed
+	 */
 	dispatch: Dispatch<D, C>;
+
+	/**
+	 * All versions of the CRDT
+	 *
+	 * Useful for debugging
+	 */
 	versions: D[];
 }
 
