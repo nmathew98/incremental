@@ -1,10 +1,14 @@
 {
 	"name": "@b.s/incremental",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"exports": {
 		"import": "./dist/index.mjs",
 		"require": "./dist/index.js",
 		"types": "./dist/index.d.ts"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/nmathew98/incremental"
 	},
 	"description": "Simple universal composable async state management utilities",
 	"main": "./dist/index.js",
