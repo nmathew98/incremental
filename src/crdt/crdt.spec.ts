@@ -197,6 +197,12 @@ describe("createCRDT", () => {
 			expect(crdt.data.c).toBe(INITIAL_VALUE.c);
 			expect(crdt.data.e).toBe(INITIAL_VALUE.e);
 
+			expect(onChange).toHaveBeenCalledWith(
+				crdt.data,
+				{ a: { b: [1, 2, 3] } },
+				INITIAL_VALUE,
+			);
+
 			crdt.dispatch(previousValue => {
 				previousValue.e.push(3);
 
