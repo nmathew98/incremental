@@ -169,5 +169,43 @@ describe("createCRDT", () => {
 				INITIAL_VALUE,
 			);
 		});
+
+		it("array references change if mutated", () => {
+			const INITIAL_VALUE = {
+				a: {
+					b: [1, 2],
+				},
+				c: {
+					d: 1,
+				},
+				e: [1, 2],
+			};
+			const onChange = vitest.fn();
+
+			const crdt = createCRDT({
+				initialValue: INITIAL_VALUE,
+				onChange,
+			});
+
+			crdt.dispatch(previousValue => {
+				previousValue.a.b.push(3);
+
+				return previousValue;
+			});
+
+			expect(crdt.data.a.b).toEqual([1, 2, 3]);
+			expect(crdt.data.c).toBe(INITIAL_VALUE.c);
+			expect(crdt.data.e).toBe(INITIAL_VALUE.e);
+
+			crdt.dispatch(previousValue => {
+				previousValue.e.push(3);
+
+				return previousValue;
+			});
+
+			expect(crdt.data.e).toEqual([1, 2, 3]);
+			expect(crdt.data.e).not.toBe(INITIAL_VALUE.e);
+			expect(crdt.data.e).not.toBe(crdt.data.a.b);
+		});
 	});
 });
