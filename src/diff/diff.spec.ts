@@ -38,6 +38,7 @@ describe("diff", () => {
 			return previousValue;
 		});
 
+		expect(crdt.data.a.b.e).toBe(INITIAL_VALUE.a.b.e);
 		expect(diff(crdt.data, INITIAL_VALUE)).not.toEqual({
 			h: 1,
 			i: { j: { k: 1 } },
