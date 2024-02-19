@@ -2,9 +2,8 @@ export interface CreateCRDTParameters<
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	C extends (next: D, diff: Partial<D>, previous: D) => unknown = (
+	C extends (next: D, previous: D) => unknown = (
 		next: D,
-		diff: Partial<D>,
 		previous: D,
 	) => unknown,
 > {
@@ -22,7 +21,6 @@ export interface CreateCRDTParameters<
 	 * is specified when `dispatch`ing the changes
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
 	onChange: C;
@@ -32,20 +30,18 @@ export interface CreateCRDTParameters<
 	 * if `onChange` resolves successfully
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onSuccess?: (next: D, diff: Partial<D>, previous: D) => void;
+	onSuccess?: (next: D, previous: D) => void;
 
 	/**
 	 * If `onChange` is an async side effect, then `onSuccess` will only be triggered
 	 * if `onChange` rejects
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onError?: (next: D, diff: Partial<D>, previous: D) => void;
+	onError?: (next: D, previous: D) => void;
 
 	/**
 	 * Track the versions of the CRDT if `true`
@@ -102,10 +98,9 @@ export interface DispatchOptions<
 	 * If specified will always be invoked during `dispatch` regardless of `isPersisted`
 	 *
 	 * @param next the final version of the document
-	 * @param diff changes to the document
 	 * @param previous the previous version of the document
 	 */
-	onChange?: (next: D, diff: Partial<D>, previous: D) => void;
+	onChange?: (next: D, previous: D) => void;
 
 	/**
 	 * If `true`, then global side effects are disabled
