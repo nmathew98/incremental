@@ -87,7 +87,9 @@ export interface Dispatch<
 	(updates: Dispatcher<D>, options?: DispatchOptions<D>): unknown;
 }
 
-type Dispatcher<D> = (state: D) => void | Partial<D>;
+type Dispatcher<D> = (
+	state: D,
+) => void | (D extends Array<any> ? D : Partial<D>);
 
 export interface DispatchOptions<
 	D extends Record<string | number | symbol, any> =
