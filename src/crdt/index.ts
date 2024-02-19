@@ -21,14 +21,7 @@ export const createCRDT = <
 	const createNewVersion = (next: D) => void versions.push(next);
 
 	const dispatch: Dispatch<D> = (updates, options?: DispatchOptions<D>) => {
-		const apply = updates => {
-			const next = Array.isArray(initialValue)
-				? updates
-				: {
-						...versions.at(-1),
-						...updates,
-					};
-
+		const apply = next => {
 			createNewVersion(next);
 
 			const previous = versions.at(-2);
@@ -60,10 +53,14 @@ export const createCRDT = <
 			return apply(produce(versions.at(-1), updates));
 
 		return apply(
-			produce(versions.at(-1), draft => ({
-				...draft,
-				...updates,
-			})),
+			produce(versions.at(-1), draft =>
+				Array.isArray(initialValue)
+					? updates
+					: {
+							...draft,
+							...updates,
+						},
+			),
 		);
 	};
 
