@@ -192,22 +192,42 @@ describe("createCRDT", () => {
 			expect(crdt.data.e).not.toBe(crdt.data.a.b);
 		});
 
-		it("accepts arrays", () => {
-			const INITIAL_VALUE = [1, 2, 3];
-			const onChange = vitest.fn();
+		describe("accepts arrays", () => {
+			it("able to `push`", () => {
+				const INITIAL_VALUE = [1, 2, 3];
+				const onChange = vitest.fn();
 
-			const crdt = createCRDT({
-				initialValue: INITIAL_VALUE,
-				onChange,
+				const crdt = createCRDT({
+					initialValue: INITIAL_VALUE,
+					onChange,
+				});
+
+				crdt.dispatch(previousValue => void previousValue.push(4));
+
+				expect(crdt.data.length).toBeGreaterThan(INITIAL_VALUE.length);
+				expect(crdt.data.at(-1)).toEqual(4);
+
+				expect(onChange).toBeCalledTimes(1);
+				expect(onChange).toBeCalledWith([1, 2, 3, 4], [1, 2, 3]);
 			});
 
-			crdt.dispatch(previousValue => void previousValue.push(4));
+			it("able to dispatch new array", () => {
+				const INITIAL_VALUE = [1, 2, 3];
+				const onChange = vitest.fn();
 
-			expect(crdt.data.length).toBeGreaterThan(INITIAL_VALUE.length);
-			expect(crdt.data.at(-1)).toEqual(4);
+				const crdt = createCRDT({
+					initialValue: INITIAL_VALUE,
+					onChange,
+				});
 
-			expect(onChange).toBeCalledTimes(1);
-			expect(onChange).toBeCalledWith([1, 2, 3, 4], [1, 2, 3]);
+				crdt.dispatch([1, 2, 3, 4]);
+
+				expect(crdt.data.length).toBeGreaterThan(INITIAL_VALUE.length);
+				expect(crdt.data.at(-1)).toEqual(4);
+
+				expect(onChange).toBeCalledTimes(1);
+				expect(onChange).toBeCalledWith([1, 2, 3, 4], [1, 2, 3]);
+			});
 		});
 	});
 });
