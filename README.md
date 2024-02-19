@@ -64,9 +64,9 @@ newMessagesSocket.onmessage = event =>
 			previousChat.messages.push(message.data);
 
 			return previousChat;
-			// If `isPersisted`, then `chatMessages.onChange`
-			// is not invoked
 		},
+		// If `isPersisted`, then `chatMessages.onChange`
+		// is not invoked
 		{ isPersisted: true },
 	);
 
