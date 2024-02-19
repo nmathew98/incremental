@@ -10,14 +10,20 @@ export const diff = <
 	next: D,
 	previous: D,
 ): D => {
-	const previousMap = new Map(Object.entries(previous));
+	const computeDiff = () => {
+		if (Array.isArray(previous)) {
+			return next.filter((v, idx) => v !== previous[idx]);
+		}
 
-	const diff = Object.entries(next).filter(
-		([key, value]) =>
-			!previousMap.has(key) || previousMap.get(key) !== value,
-	);
+		const previousMap = new Map(Object.entries(previous));
 
-	return Array.isArray(previous)
-		? (diff.map(([_, v]) => v) as D)
-		: (Object.fromEntries(diff) as D);
+		return Object.entries(next).filter(
+			([key, value]) =>
+				!previousMap.has(key) || previousMap.get(key) !== value,
+		);
+	};
+
+	const diff = computeDiff();
+
+	return Array.isArray(previous) ? diff : (Object.fromEntries(diff) as D);
 };
