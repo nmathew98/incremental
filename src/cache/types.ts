@@ -1,6 +1,8 @@
 export interface CacheProvider {
 	makeOnChange: (queryKey: Serializable) => (next: CacheValue) => void;
-	getCachedValue: (queryKey: Serializable) => null | CacheValue;
+	getCachedValue: (
+		queryKey: Serializable,
+	) => null | CacheValue | Promise<CacheValue>;
 	makeInvalidateCachedValue: (queryKey: Serializable) => () => void;
 	setCachedValue: (queryKey: Serializable) => (next: CacheValue) => void;
 	clearCache: () => void;

@@ -29,9 +29,19 @@ export const createCacheProvider = (
 		}
 
 		if (store.has(queryKey.toString())) {
-			const cachedValue = (
-				store.get(queryKey.toString()) as void | WeakRef<any>
-			)?.deref();
+			const cachedValue = store.get(queryKey.toString());
+
+			if (cachedValue instanceof WeakRef) {
+				const unwrapped = cachedValue.deref();
+
+				if (!unwrapped) {
+					store.delete(queryKey);
+
+					return null;
+				}
+
+				return unwrapped;
+			}
 
 			return cachedValue ?? null;
 		}
