@@ -1,4 +1,4 @@
-import { CacheProvider } from "../cache/types";
+import type { CacheProvider } from "../cache/types";
 
 export interface BaseCreateIncrementalOptions<
 	D extends Record<string | number | symbol, any> =
