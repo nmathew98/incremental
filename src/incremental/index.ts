@@ -19,7 +19,8 @@ export const createIncremental = async <
 	const { makeOnChange, makeInvalidateCachedValue, clearCache } = __cache__;
 
 	const crdtInitialValue =
-		initialValue ?? (await __cache__.getCachedValue(queryKey as WeakKey));
+		/// @ts-expect-error
+		initialValue ?? (await __cache__.getCachedValue(queryKey));
 
 	if (!crdtInitialValue) {
 		throw new TypeError("`initialValue` must be a `Record` or an `Array`");
@@ -42,9 +43,8 @@ export const createIncremental = async <
 		onChange: combinedOnChange as any,
 	});
 
-	const invalidateCachedValue = makeInvalidateCachedValue(
-		queryKey as WeakKey,
-	);
+	/// @ts-expect-error
+	const invalidateCachedValue = makeInvalidateCachedValue(queryKey);
 
 	return { data, dispatch, invalidateCachedValue, clearCache };
 };

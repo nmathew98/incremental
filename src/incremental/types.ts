@@ -1,4 +1,4 @@
-import type { CacheProvider } from "../cache/types";
+import type { CacheProvider, Serializable } from "../cache/types";
 
 export interface BaseCreateIncrementalOptions<
 	D extends Record<string | number | symbol, any> =
@@ -32,7 +32,7 @@ export interface CreateIncrementalOptionsWithInitialValue<
 		previous: D,
 	) => unknown,
 > extends BaseCreateIncrementalOptions<D, C> {
-	queryKey?: WeakKey;
+	queryKey?: Serializable;
 
 	/**
 	 * Document to initialize the CRDT to
@@ -51,7 +51,7 @@ export interface CreateIncrementalOptionsWithoutInitialValue<
 		previous: D,
 	) => unknown,
 > extends BaseCreateIncrementalOptions<D, C> {
-	queryKey: WeakKey;
+	queryKey: Serializable;
 
 	initialValue?: never;
 }
