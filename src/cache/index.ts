@@ -17,6 +17,8 @@ export const createCacheProvider = (
 
 			store.set(queryKey, cachedValue);
 
+			prefetchedQueries.delete(queryKey);
+
 			return cachedValue;
 		}
 
