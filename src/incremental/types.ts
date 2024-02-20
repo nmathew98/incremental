@@ -1,6 +1,6 @@
 import type { CacheProvider, Serializable } from "../cache/types";
 
-export interface BaseCreateIncrementalOptions<
+export interface CreateIncrementalOptions<
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
@@ -21,17 +21,7 @@ export interface BaseCreateIncrementalOptions<
 	 * @param previous the previous version of the document
 	 */
 	onChange: C;
-}
 
-export interface CreateIncrementalOptionsWithInitialValue<
-	D extends Record<string | number | symbol, any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
-	C extends (next: D, previous: D) => unknown = (
-		next: D,
-		previous: D,
-	) => unknown,
-> extends BaseCreateIncrementalOptions<D, C> {
 	queryKey?: Serializable;
 
 	/**
@@ -41,29 +31,3 @@ export interface CreateIncrementalOptionsWithInitialValue<
 	 */
 	initialValue: D;
 }
-
-export interface CreateIncrementalOptionsWithoutInitialValue<
-	D extends Record<string | number | symbol, any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
-	C extends (next: D, previous: D) => unknown = (
-		next: D,
-		previous: D,
-	) => unknown,
-> extends BaseCreateIncrementalOptions<D, C> {
-	queryKey: Serializable;
-
-	initialValue?: never;
-}
-
-export type CreateIncrementalOptions<
-	D extends Record<string | number | symbol, any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
-	C extends (next: D, previous: D) => unknown = (
-		next: D,
-		previous: D,
-	) => unknown,
-> =
-	| CreateIncrementalOptionsWithoutInitialValue<D, C>
-	| CreateIncrementalOptionsWithInitialValue<D, C>;

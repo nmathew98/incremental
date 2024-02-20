@@ -1,9 +1,5 @@
-import { createCacheProvider } from "../cache";
-import type { CacheProvider } from "../cache/types";
 import { createCRDT } from "../crdt";
 import type { CreateIncrementalOptions } from "./types";
-
-let __cache__: CacheProvider;
 
 export const createIncremental = async <
 	D extends Record<string | number | symbol, any> | Array<any>,
@@ -14,37 +10,30 @@ export const createIncremental = async <
 	initialValue,
 	onChange,
 }: CreateIncrementalOptions<D, C>) => {
-	__cache__ ??= cache ?? createCacheProvider();
-
-	const { makeOnChange, makeInvalidateCachedValue, clearCache } = __cache__;
-
-	const crdtInitialValue =
-		/// @ts-expect-error
-		initialValue ?? (await __cache__.getCachedValue(queryKey));
-
-	if (!crdtInitialValue) {
-		throw new TypeError("`initialValue` must be a `Record` or an `Array`");
-	}
-
 	const combinedOnChange = (...args: any[]) => {
 		const result = (onChange as any)(...args);
 
 		if (queryKey) {
-			const updateCache: (...args: any) => any = makeOnChange(queryKey);
+			const updateCache: any = cache?.makeOnChange?.(queryKey);
 
-			updateCache(...args);
+			updateCache?.(...args);
 		}
 
 		return result;
 	};
 
 	const { data, dispatch } = createCRDT<D, C>({
-		initialValue: crdtInitialValue as D,
+		initialValue,
 		onChange: combinedOnChange as any,
 	});
 
 	/// @ts-expect-error
-	const invalidateCachedValue = makeInvalidateCachedValue(queryKey);
+	const invalidateCachedValue = cache?.makeInvalidateCachedValue(queryKey);
 
-	return { data, dispatch, invalidateCachedValue, clearCache };
+	return {
+		data,
+		dispatch,
+		invalidateCachedValue,
+		clearCache: cache?.clearCache,
+	};
 };
