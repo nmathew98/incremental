@@ -38,7 +38,7 @@ export const createIncremental = async <
 	};
 
 	const { data, dispatch } = createCRDT<D, C>({
-		initialValue: initialValue as D,
+		initialValue: crdtInitialValue as D,
 		onChange: combinedOnChange as any,
 	});
 
