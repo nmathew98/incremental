@@ -1,8 +1,8 @@
 export interface CacheProvider {
-	makeOnChange: (queryKey: WeakKey) => (next: CacheValue) => void;
-	getCachedValue: (queryKey: WeakKey) => null | CacheValue;
-	makeInvalidateCachedValue: (queryKey: WeakKey) => void;
-	setCachedValue: (queryKey: WeakKey) => (next: CacheValue) => void;
+	makeOnChange: (queryKey: Serializable) => (next: CacheValue) => void;
+	getCachedValue: (queryKey: Serializable) => null | CacheValue;
+	makeInvalidateCachedValue: (queryKey: Serializable) => void;
+	setCachedValue: (queryKey: Serializable) => (next: CacheValue) => void;
 	clearCache: () => void;
 }
 
