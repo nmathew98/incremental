@@ -12,7 +12,7 @@ export interface CacheStore {
 	has: (queryKey: Serializable) => boolean;
 	get: (
 		queryKey: Serializable,
-	) => void | WeakRef<CacheValue> | WeakRef<Promise<CacheValue>>;
+	) => void | WeakRef<CacheValue> | Promise<CacheValue>;
 	set: (queryKey: Serializable, value: WeakRef<CacheValue>) => void;
 	delete: (queryKey: Serializable) => void;
 	clear?: () => void;
