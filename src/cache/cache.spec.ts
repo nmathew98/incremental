@@ -50,17 +50,20 @@ describe("createCacheProvider", () => {
 			const KEY = Symbol("test");
 			const PREFETCHED_VALUE = Object.create(null);
 			const DISPATCHED_VALUE = Object.create(null);
-			const STALE_VALUE = void DISPATCHED_VALUE;
 
-			const { setCachedValue, getCachedValue, makeOnChange } =
-				createCacheProvider();
+			const {
+				setCachedValue,
+				getCachedValue,
+				makeOnChange,
+				makeInvalidateCachedValue,
+			} = createCacheProvider();
 
 			setCachedValue(KEY)(PREFETCHED_VALUE);
 
 			expect(getCachedValue(KEY)).toBe(PREFETCHED_VALUE);
 
 			makeOnChange(KEY)(DISPATCHED_VALUE);
-			makeOnChange(KEY)(STALE_VALUE);
+			makeInvalidateCachedValue(KEY);
 
 			expect(getCachedValue(KEY)).toBe(null);
 		});
