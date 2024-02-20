@@ -14,7 +14,7 @@ export const createIncremental = async <
 	initialValue,
 	onChange,
 }: CreateIncrementalOptions<D, C>) => {
-	__cache__ = cache ?? createCacheProvider();
+	__cache__ ??= cache ?? createCacheProvider();
 
 	const { makeOnChange, makeInvalidateCachedValue, clearCache } = __cache__;
 
