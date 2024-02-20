@@ -1,7 +1,3 @@
-export interface CacheProviderOptions {
-	store?: CacheStore;
-}
-
 export interface CacheProvider {
 	makeOnChange: (queryKey: WeakKey) => (next: CacheValue) => void;
 	getCachedValue: (queryKey: WeakKey) => null | CacheValue;
