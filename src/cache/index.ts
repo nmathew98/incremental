@@ -36,9 +36,7 @@ export const createCacheProvider = (
 		void prefetchedQueries.set(queryKey, next);
 
 	const clearCache = () => {
-		// Intentional mutation, `WeakMap` has no `clear`
-		store = new WeakMap();
-
+		store.clear?.();
 		prefetchedQueries.clear();
 	};
 

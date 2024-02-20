@@ -13,4 +13,5 @@ export interface CacheStore {
 	get: (queryKey: WeakKey) => void | CacheValue | Promise<CacheValue>;
 	set: (queryKey: WeakKey, value: void | CacheValue) => void;
 	delete: (queryKey: WeakKey) => void;
+	clear?: () => void;
 }

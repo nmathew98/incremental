@@ -1,7 +1,7 @@
 import { createCacheProvider } from "../cache";
 import type { CacheProvider } from "../cache/types";
 import { createCRDT } from "../crdt";
-import { CreateIncrementalOptions } from "./types";
+import type { CreateIncrementalOptions } from "./types";
 
 let __cache__: CacheProvider;
 
