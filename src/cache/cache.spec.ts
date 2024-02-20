@@ -63,7 +63,7 @@ describe("createCacheProvider", () => {
 			expect(getCachedValue(KEY)).toBe(PREFETCHED_VALUE);
 
 			makeOnChange(KEY)(DISPATCHED_VALUE);
-			makeInvalidateCachedValue(KEY);
+			makeInvalidateCachedValue(KEY)();
 
 			expect(getCachedValue(KEY)).toBe(null);
 		});

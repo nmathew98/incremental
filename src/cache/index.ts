@@ -39,7 +39,7 @@ export const createCacheProvider = (
 		return null;
 	};
 
-	const makeInvalidateCachedValue = (queryKey: Serializable) => {
+	const makeInvalidateCachedValue = (queryKey: Serializable) => () => {
 		prefetchedQueries.delete(queryKey.toString());
 		store.delete(queryKey.toString());
 	};
