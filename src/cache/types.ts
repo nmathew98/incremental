@@ -9,9 +9,15 @@ export interface CacheProvider {
 export type CacheValue = Record<string | symbol | number, any> | unknown[];
 
 export interface CacheStore {
-	has: (queryKey: WeakKey) => boolean;
-	get: (queryKey: WeakKey) => void | CacheValue | Promise<CacheValue>;
-	set: (queryKey: WeakKey, value: void | CacheValue) => void;
-	delete: (queryKey: WeakKey) => void;
+	has: (queryKey: Serializable) => boolean;
+	get: (
+		queryKey: Serializable,
+	) => void | WeakRef<CacheValue> | WeakRef<Promise<CacheValue>>;
+	set: (queryKey: Serializable, value: WeakRef<CacheValue>) => void;
+	delete: (queryKey: Serializable) => void;
 	clear?: () => void;
+}
+
+export interface Serializable {
+	toString: () => string;
 }

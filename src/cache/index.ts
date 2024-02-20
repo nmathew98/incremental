@@ -1,39 +1,51 @@
-import type { CacheProvider, CacheStore, CacheValue } from "./types";
+import type {
+	CacheProvider,
+	CacheStore,
+	CacheValue,
+	Serializable,
+} from "./types";
 
 export const createCacheProvider = (
-	store: CacheStore = new WeakMap(),
+	store: CacheStore = new Map<any, WeakRef<CacheValue>>(),
 ): CacheProvider => {
 	const prefetchedQueries = new Map();
 
-	const makeOnChange = (queryKey: WeakKey) => (next: CacheValue) => {
-		if (prefetchedQueries.has(queryKey)) prefetchedQueries.delete(queryKey);
+	const makeOnChange = (queryKey: Serializable) => (next: CacheValue) => {
+		if (prefetchedQueries.has(queryKey.toString()))
+			prefetchedQueries.delete(queryKey.toString());
 
-		store.set(queryKey, next);
+		store.set(queryKey.toString(), new WeakRef(next));
 	};
 
-	const getCachedValue = (queryKey: WeakKey) => {
-		if (prefetchedQueries.has(queryKey)) {
-			const cachedValue = prefetchedQueries.get(queryKey);
+	const getCachedValue = (queryKey: Serializable) => {
+		if (prefetchedQueries.has(queryKey.toString())) {
+			const cachedValue = prefetchedQueries.get(queryKey.toString());
 
-			store.set(queryKey, cachedValue);
+			store.set(queryKey, new WeakRef(cachedValue));
 
-			prefetchedQueries.delete(queryKey);
+			prefetchedQueries.delete(queryKey.toString());
 
 			return cachedValue;
 		}
 
-		if (store.has(queryKey)) return store.get(queryKey) ?? null;
+		if (store.has(queryKey.toString())) {
+			const cachedValue = (
+				store.get(queryKey.toString()) as void | WeakRef<any>
+			)?.deref();
+
+			return cachedValue ?? null;
+		}
 
 		return null;
 	};
 
-	const makeInvalidateCachedValue = (queryKey: WeakKey) => {
-		prefetchedQueries.delete(queryKey);
-		store.delete(queryKey);
+	const makeInvalidateCachedValue = (queryKey: Serializable) => {
+		prefetchedQueries.delete(queryKey.toString());
+		store.delete(queryKey.toString());
 	};
 
-	const setCachedValue = (queryKey: WeakKey) => (next: CacheValue) =>
-		void prefetchedQueries.set(queryKey, next);
+	const setCachedValue = (queryKey: Serializable) => (next: CacheValue) =>
+		void prefetchedQueries.set(queryKey.toString(), next);
 
 	const clearCache = () => {
 		store.clear?.();
