@@ -8,27 +8,26 @@ export const makeMonitoredFetch = <F extends (...args: any[]) => Promise<any>>({
 	refetchOnWindowFocus = false,
 	enabled = true,
 }: MakeMonitoredParameters<F>) => {
-	const monitoredFetchFn = async (...args: Parameters<typeof fetchFn>) => {
-		if (!enabled) return;
+	const monitoredFetchFn = new Proxy(fetchFn, {
+		apply: (target, thisArg, args: Parameters<F>) => {
+			if (!enabled) return;
 
-		onFetching?.(true);
+			onFetching?.(true);
 
-		return fetchFn(...args)
-			.then(result => {
-				onSuccess?.(result, ...args);
+			return Reflect.apply(target, thisArg, args)
+				.then(result => {
+					onSuccess?.(result, ...args);
 
-				return result;
-			})
-			.catch(error => {
-				onError?.(error, ...args);
+					return result;
+				})
+				.catch(error => {
+					onError?.(error, ...args);
 
-				throw error;
-			})
-			.finally(() => onFetching?.(false));
-	};
-
-	if (refetchOnWindowFocus)
-		window?.addEventListener("focusin", monitoredFetchFn as any);
+					throw error;
+				})
+				.finally(() => onFetching?.(false));
+		},
+	});
 
 	return monitoredFetchFn as typeof fetchFn;
 };

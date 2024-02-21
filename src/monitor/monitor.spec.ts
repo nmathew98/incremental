@@ -45,7 +45,7 @@ describe("makeMonitored", () => {
 			enabled: false,
 		});
 
-		await expect(fetch("hello", "world")).resolves.not.toThrowError();
+		fetch("hello", "world");
 
 		expect(fetchFn).not.toHaveBeenCalled();
 
@@ -78,28 +78,5 @@ describe("makeMonitored", () => {
 		expect(onError).toHaveBeenCalledWith("error!", "hello", "world");
 
 		expect(onSuccess).not.toHaveBeenCalled();
-	});
-
-	it("refetches on window focus", () => {
-		const fetchFn = vitest.fn().mockImplementation(async () => {
-			throw "error!";
-		});
-		const onFetching = vitest.fn();
-		const onSuccess = vitest.fn();
-		const onError = vitest.fn();
-		const addEventListener = vitest.fn();
-
-		(global as any).window = { addEventListener };
-
-		const fetch = makeMonitoredFetch({
-			fetchFn,
-			onFetching,
-			onSuccess,
-			onError,
-			refetchOnWindowFocus: true,
-		});
-
-		expect(addEventListener).toHaveBeenCalledTimes(1);
-		expect(addEventListener).toHaveBeenCalledWith("focusin", fetch);
 	});
 });

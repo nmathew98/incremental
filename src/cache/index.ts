@@ -4,9 +4,10 @@ import type {
 	CacheValue,
 	Serializable,
 } from "./types";
+import { createWeakCache } from "./weak-cache";
 
 export const createCacheProvider = (
-	store: CacheStore = new Map<any, WeakRef<CacheValue>>(),
+	store: CacheStore = createWeakCache(),
 ): CacheProvider => {
 	const prefetchedQueries = new Map();
 
@@ -14,39 +15,21 @@ export const createCacheProvider = (
 		if (prefetchedQueries.has(queryKey.toString()))
 			prefetchedQueries.delete(queryKey.toString());
 
-		store.set(queryKey.toString(), new WeakRef(next));
+		store.set(queryKey.toString(), next);
 	};
 
 	const getCachedValue = (queryKey: Serializable) => {
 		if (prefetchedQueries.has(queryKey.toString())) {
 			const cachedValue = prefetchedQueries.get(queryKey.toString());
 
-			store.set(queryKey, new WeakRef(cachedValue));
+			store.set(queryKey, cachedValue);
 
 			prefetchedQueries.delete(queryKey.toString());
 
 			return cachedValue;
 		}
 
-		if (store.has(queryKey.toString())) {
-			const cachedValue = store.get(queryKey.toString());
-
-			if (cachedValue instanceof WeakRef) {
-				const unwrapped = cachedValue.deref();
-
-				if (!unwrapped) {
-					store.delete(queryKey);
-
-					return null;
-				}
-
-				return unwrapped;
-			}
-
-			return cachedValue ?? null;
-		}
-
-		return null;
+		return store.get(queryKey.toString());
 	};
 
 	const makeInvalidateCachedValue = (queryKey: Serializable) => () => {
