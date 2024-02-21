@@ -8,6 +8,5 @@ export interface MakeMonitoredParameters<
 		...args: Parameters<F>
 	) => void;
 	onError?: (error: unknown, ...args: Parameters<F>) => void;
-	refetchOnWindowFocus?: boolean;
 	enabled?: boolean;
 }
