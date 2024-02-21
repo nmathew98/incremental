@@ -5,7 +5,6 @@ export const makeMonitoredFetch = <F extends (...args: any[]) => Promise<any>>({
 	onFetching,
 	onSuccess,
 	onError,
-	refetchOnWindowFocus = false,
 	enabled = true,
 }: MakeMonitoredParameters<F>) => {
 	const monitoredFetchFn = new Proxy(fetchFn, {
@@ -29,5 +28,5 @@ export const makeMonitoredFetch = <F extends (...args: any[]) => Promise<any>>({
 		},
 	});
 
-	return monitoredFetchFn as typeof fetchFn;
+	return monitoredFetchFn;
 };
