@@ -10,20 +10,14 @@ export const diff = <
 	next: D,
 	previous: D,
 ): D => {
-	const computeDiff = () => {
-		if (Array.isArray(previous)) {
-			return next.filter((v, idx) => v !== previous[idx]);
-		}
+	if (Array.isArray(previous)) {
+		return next.filter((v, idx) => v !== previous[idx]);
+	}
 
-		return Object.fromEntries(
-			Object.entries(next).filter(
-				([key, value]) =>
-					previous[key] !== undefined &&
-					previous[key] !== null &&
-					previous[key] !== value,
-			),
-		);
-	};
-
-	return computeDiff();
+	return Object.fromEntries(
+		Object.entries(next).filter(
+			([key, value]) =>
+				previous[key] === undefined || previous[key] !== value,
+		),
+	) as D;
 };
