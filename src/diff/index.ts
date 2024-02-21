@@ -15,15 +15,15 @@ export const diff = <
 			return next.filter((v, idx) => v !== previous[idx]);
 		}
 
-		const previousMap = new Map(Object.entries(previous));
-
-		return Object.entries(next).filter(
-			([key, value]) =>
-				!previousMap.has(key) || previousMap.get(key) !== value,
+		return Object.fromEntries(
+			Object.entries(next).filter(
+				([key, value]) =>
+					previous[key] !== undefined &&
+					previous[key] !== null &&
+					previous[key] !== value,
+			),
 		);
 	};
 
-	const diff = computeDiff();
-
-	return Array.isArray(previous) ? diff : (Object.fromEntries(diff) as D);
+	return computeDiff();
 };
