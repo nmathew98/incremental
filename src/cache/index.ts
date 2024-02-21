@@ -1,44 +1,47 @@
-import type { CacheProvider, CacheStore, CacheValue } from "./types";
+import type {
+	CacheProvider,
+	CacheStore,
+	CacheValue,
+	Serializable,
+} from "./types";
+import { createWeakCache } from "./weak-cache";
 
 export const createCacheProvider = (
-	store: CacheStore = new WeakMap(),
+	store: CacheStore = createWeakCache(),
 ): CacheProvider => {
 	const prefetchedQueries = new Map();
 
-	const makeOnChange = (queryKey: WeakKey) => (next: CacheValue) => {
-		if (prefetchedQueries.has(queryKey)) prefetchedQueries.delete(queryKey);
+	const makeOnChange = (queryKey: Serializable) => (next: CacheValue) => {
+		if (prefetchedQueries.has(queryKey.toString()))
+			prefetchedQueries.delete(queryKey.toString());
 
-		store.set(queryKey, next);
+		store.set(queryKey.toString(), next);
 	};
 
-	const getCachedValue = (queryKey: WeakKey) => {
-		if (prefetchedQueries.has(queryKey)) {
-			const cachedValue = prefetchedQueries.get(queryKey);
+	const getCachedValue = (queryKey: Serializable) => {
+		if (prefetchedQueries.has(queryKey.toString())) {
+			const cachedValue = prefetchedQueries.get(queryKey.toString());
 
 			store.set(queryKey, cachedValue);
 
-			prefetchedQueries.delete(queryKey);
+			prefetchedQueries.delete(queryKey.toString());
 
 			return cachedValue;
 		}
 
-		if (store.has(queryKey)) return store.get(queryKey) ?? null;
-
-		return null;
+		return store.get(queryKey.toString());
 	};
 
-	const makeInvalidateCachedValue = (queryKey: WeakKey) => {
-		prefetchedQueries.delete(queryKey);
-		store.delete(queryKey);
+	const makeInvalidateCachedValue = (queryKey: Serializable) => () => {
+		prefetchedQueries.delete(queryKey.toString());
+		store.delete(queryKey.toString());
 	};
 
-	const setCachedValue = (queryKey: WeakKey) => (next: CacheValue) =>
-		void prefetchedQueries.set(queryKey, next);
+	const setCachedValue = (queryKey: Serializable) => (next: CacheValue) =>
+		void prefetchedQueries.set(queryKey.toString(), next);
 
 	const clearCache = () => {
-		// Intentional mutation, `WeakMap` has no `clear`
-		store = new WeakMap();
-
+		store.clear?.();
 		prefetchedQueries.clear();
 	};
 
