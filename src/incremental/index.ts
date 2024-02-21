@@ -10,21 +10,21 @@ export const createIncremental = async <
 	initialValue,
 	onChange,
 }: CreateIncrementalOptions<D, C>) => {
-	const combinedOnChange = (...args: any[]) => {
-		const result = (onChange as any)(...args);
+	const proxiedOnChange = new Proxy(onChange, {
+		apply: (onChange, thisArg, args) => {
+			const result = Reflect.apply(onChange, thisArg, args);
 
-		if (queryKey) {
-			const updateCache: any = cache?.makeOnChange?.(queryKey);
+			if (queryKey) {
+				cache?.makeOnChange?.(queryKey).apply(null, [args[0]]);
+			}
 
-			updateCache?.(...args);
-		}
-
-		return result;
-	};
+			return result;
+		},
+	});
 
 	const { data, dispatch } = createCRDT<D, C>({
 		initialValue,
-		onChange: combinedOnChange as any,
+		onChange: proxiedOnChange,
 	});
 
 	/// @ts-expect-error

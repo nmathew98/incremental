@@ -12,10 +12,8 @@ export type CacheValue = Record<string | symbol | number, any> | unknown[];
 
 export interface CacheStore {
 	has: (queryKey: Serializable) => boolean;
-	get: (
-		queryKey: Serializable,
-	) => void | WeakRef<CacheValue> | Promise<CacheValue>;
-	set: (queryKey: Serializable, value: WeakRef<CacheValue>) => void;
+	get: (queryKey: Serializable) => void | CacheValue | Promise<CacheValue>;
+	set: (queryKey: Serializable, value: CacheValue) => void;
 	delete: (queryKey: Serializable) => void;
 	clear?: () => void;
 }
