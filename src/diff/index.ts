@@ -18,9 +18,7 @@ export const diff = <
 		return Object.fromEntries(
 			Object.entries(next).filter(
 				([key, value]) =>
-					previous[key] !== undefined &&
-					previous[key] !== null &&
-					previous[key] !== value,
+					previous[key] === undefined || previous[key] !== value,
 			),
 		);
 	};
