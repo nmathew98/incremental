@@ -1,6 +1,6 @@
 {
 	"name": "@b.s/incremental",
-	"version": "2.1.0",
+	"version": "2.1.1",
 	"exports": {
 		"import": "./dist/index.mjs",
 		"require": "./dist/index.js",
