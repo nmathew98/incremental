@@ -22,29 +22,30 @@ export const createCRDT = <
 
 	const dispatch: Dispatch<D> = (updates, options?: DispatchOptions<D>) => {
 		const apply = next => {
-			createNewVersion(next);
-
-			const previous = versions.at(-2);
-			const latest = versions.at(-1);
+			const previous = versions.at(-1);
+			const latest = next;
 
 			if (!trackVersions) versions.splice(0, versions.length - 1);
 
 			options?.onChange?.(latest, previous);
 
 			if (!options?.isPersisted) {
-				// If `onChange` returns a `Promise` then the side-effect is
-				// async and we want to wait until it is done
-				// before sync effects
-				const onChangeResult = onChange(latest, previous)
+				const isPromise = onChange(latest, previous)
 					?.then?.(result => {
 						onSuccess?.(latest, previous);
+
+						createNewVersion(latest);
 
 						return result;
 					})
 					.catch(() => void onError?.(latest, previous));
 
-				return onChangeResult ?? latest;
+				if (isPromise) {
+					return isPromise;
+				}
 			}
+
+			createNewVersion(latest);
 
 			return latest;
 		};
