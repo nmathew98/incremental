@@ -32,9 +32,18 @@ export const createCRDT = <
 			if (!options?.isPersisted) {
 				const isPromise = onChange(latest, previous)
 					?.then?.(result => {
-						onSuccess?.(latest, previous, result);
+						// On the FE, if `onChange` returns a result then assume that is
+						// the API response and likely has to be merged in by `onSuccess`
+						// which should return the complete document
+						// (creating a new record and we don't have `uuid`s for example)
 
-						createNewVersion(latest);
+						// On the BE, don't think having an incomplete document is something
+						// that will come up often but the option is available in case it does
+						const merged = onSuccess?.(latest, previous, result);
+
+						const final = merged || latest;
+
+						createNewVersion(final);
 
 						return result;
 					})
