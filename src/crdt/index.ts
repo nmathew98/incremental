@@ -32,7 +32,7 @@ export const createCRDT = <
 			if (!options?.isPersisted) {
 				const isPromise = onChange(latest, previous)
 					?.then?.(result => {
-						onSuccess?.(latest, previous);
+						onSuccess?.(latest, previous, result);
 
 						createNewVersion(latest);
 
