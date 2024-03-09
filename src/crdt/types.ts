@@ -31,8 +31,9 @@ export interface CreateCRDTParameters<
 	 *
 	 * @param next the final version of the document
 	 * @param previous the previous version of the document
+	 * @param result the result of `onChange`
 	 */
-	onSuccess?: (next: D, previous: D) => void;
+	onSuccess?: (next: D, previous: D, result?: unknown) => void;
 
 	/**
 	 * If `onChange` is an async side effect, then `onSuccess` will only be triggered
