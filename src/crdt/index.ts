@@ -45,7 +45,8 @@ export const createCRDT = <
 
 						createNewVersion(final);
 
-						return result;
+						// `final` here should be the complete version of the data
+						return final;
 					})
 					.catch(() => void onError?.(latest, previous));
 
