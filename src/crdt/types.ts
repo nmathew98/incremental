@@ -33,7 +33,7 @@ export interface CreateCRDTParameters<
 	 * @param previous the previous version of the document
 	 * @param result the result of `onChange`
 	 */
-	onSuccess?: (next: D, previous: D, result?: unknown) => void;
+	onSuccess?: (next: D, previous: D, result: Awaited<ReturnType<C>>) => void;
 
 	/**
 	 * If `onChange` is an async side effect, then `onSuccess` will only be triggered
