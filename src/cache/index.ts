@@ -12,18 +12,19 @@ export const createCacheProvider = (
 	const prefetchedQueries = new Map();
 
 	const makeOnChange = (queryKey: Serializable) => (next: CacheValue) => {
-		if (prefetchedQueries.has(queryKey)) prefetchedQueries.delete(queryKey);
+		if (prefetchedQueries.has(queryKey.toString()))
+			prefetchedQueries.delete(queryKey.toString());
 
 		store.set(queryKey, next);
 	};
 
 	const getCachedValue = (queryKey: Serializable) => {
-		if (prefetchedQueries.has(queryKey)) {
-			const cachedValue = prefetchedQueries.get(queryKey);
+		if (prefetchedQueries.has(queryKey.toString())) {
+			const cachedValue = prefetchedQueries.get(queryKey.toString());
 
 			store.set(queryKey, cachedValue);
 
-			prefetchedQueries.delete(queryKey);
+			prefetchedQueries.delete(queryKey.toString());
 
 			return cachedValue;
 		}
@@ -32,12 +33,12 @@ export const createCacheProvider = (
 	};
 
 	const makeInvalidateCachedValue = (queryKey: Serializable) => () => {
-		prefetchedQueries.delete(queryKey);
+		prefetchedQueries.delete(queryKey.toString());
 		store.delete(queryKey);
 	};
 
 	const setCachedValue = (queryKey: Serializable) => (next: CacheValue) =>
-		void prefetchedQueries.set(queryKey, next);
+		void prefetchedQueries.set(queryKey.toString(), next);
 
 	const clearCache = () => {
 		store.clear?.();
