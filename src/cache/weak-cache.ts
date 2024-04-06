@@ -3,6 +3,26 @@ export const createWeakCache = () =>
 		get: (target: Map<any, any>, p: keyof Map<any, any>) => {
 			const value = Reflect.get(target, p);
 
+			if (p === "has" && typeof value === "function") {
+				return new Proxy(value.bind(target), {
+					apply: (has, thisArg, args) => {
+						const [key] = args;
+
+						return Reflect.apply(has, thisArg, [key.toString()]);
+					},
+				});
+			}
+
+			if (p === "delete" && typeof value === "function") {
+				return new Proxy(value.bind(target), {
+					apply: (has, thisArg, args) => {
+						const [key] = args;
+
+						return Reflect.apply(has, thisArg, [key.toString()]);
+					},
+				});
+			}
+
 			if (p === "set" && typeof value === "function") {
 				return new Proxy(value.bind(target), {
 					apply: (set, thisArg, args) => {
@@ -10,12 +30,15 @@ export const createWeakCache = () =>
 
 						if (value && typeof value === "object") {
 							return Reflect.apply(set, thisArg, [
-								key,
+								key.toString(),
 								new WeakRef(value),
 							]);
 						}
 
-						return Reflect.apply(set, thisArg, args);
+						return Reflect.apply(set, thisArg, [
+							key.toString(),
+							value,
+						]);
 					},
 				});
 			}
@@ -25,15 +48,17 @@ export const createWeakCache = () =>
 					apply: (get, thisArg, args) => {
 						const [key] = args;
 
-						if (!target.has(key)) return null;
+						if (!target.has(key.toString())) return null;
 
-						const value = Reflect.apply(get, thisArg, [key]);
+						const value = Reflect.apply(get, thisArg, [
+							key.toString(),
+						]);
 
 						if (value instanceof WeakRef) {
 							const unwrapped = value.deref();
 
 							if (!unwrapped) {
-								target.delete(key);
+								target.delete(key.toString());
 							}
 
 							return unwrapped ?? null;
